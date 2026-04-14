@@ -1,0 +1,77 @@
+<?php
+
+namespace App\Console\Commands;
+
+use Illuminate\Console\Command;
+use App\Models\MonthlySummary;
+use Carbon\Carbon;
+
+class GenerateMonthlySummary extends Command
+{
+    protected $signature = 'summary:generate {month?} {year?}';
+    protected $description = 'Generate monthly summary data';
+
+    public function handle()
+    {
+        $month = $this->argument('month') ?? now()->month;
+        $year = $this->argument('year') ?? now()->year;
+
+        $periodeAwal = "{$year}-{$month}-01";
+
+        $this->info("🚀 Generating summary for period: {$periodeAwal}");
+
+        // Tampilkan rentang waktu yang digunakan
+        $startDate = Carbon::parse($periodeAwal)->startOfMonth()->startOfDay();
+        $endDate = Carbon::parse($periodeAwal)->endOfMonth()->endOfDay();
+
+        $this->info("📅 Period range: {$startDate} to {$endDate}");
+
+        try {
+            $summary = MonthlySummary::generateForPeriod($periodeAwal);
+
+            $this->info("✅ Summary generated successfully for {$summary->nama_periode}");
+            $this->line("");
+
+            $this->info("📊 ORDER DATA:");
+            $this->info("   • Total Orders Quantity: " . number_format($summary->total_order_qty, 0, ',', '.'));
+            $this->info("   • Total Return Quantity: " . number_format($summary->total_return_qty, 0, ',', '.'));
+            $this->info("   • Net Quantity: " . number_format($summary->net_quantity, 0, ',', '.'));
+            $this->info("   • Total Harga Produk: Rp " . number_format($summary->total_harga_produk, 0, ',', '.'));
+            $this->line("");
+
+            $this->info("💰 INCOME DATA:");
+            $this->info("   • Total Incomes: " . number_format($summary->total_income_count, 0, ',', '.'));
+            $this->info("   • Total Penghasilan: Rp " . number_format($summary->total_penghasilan, 0, ',', '.'));
+            $this->info("   • Total Penghasilan Shopee: Rp " . number_format($summary->total_penghasilan_shopee, 0, ',', '.'));
+            $this->info("   • Total Penghasilan Tiktok: Rp " . number_format($summary->total_penghasilan_tiktok, 0, ',', '.'));
+            $this->info("   • Income Count Shopee: " . number_format($summary->total_income_count_shopee, 0, ',', '.'));
+            $this->info("   • Income Count Tiktok: " . number_format($summary->total_income_count_tiktok, 0, ',', '.'));
+            $this->line("");
+
+            $this->info("🏷️ HPP & PROFIT:");
+            $this->info("   • Total HPP: Rp " . number_format($summary->total_hpp, 0, ',', '.'));
+            $this->info("   • Total HPP Shopee: Rp " . number_format($summary->total_hpp_shopee, 0, ',', '.'));
+            $this->info("   • Total HPP Tiktok: Rp " . number_format($summary->total_hpp_tiktok, 0, ',', '.'));
+            $this->info("   • Laba/Rugi: Rp " . number_format($summary->laba_rugi, 0, ',', '.'));
+            $this->info("   • Laba/Rugi Shopee: Rp " . number_format($summary->laba_rugi_shopee, 0, ',', '.'));
+            $this->info("   • Laba/Rugi Tiktok: Rp " . number_format($summary->laba_rugi_tiktok, 0, ',', '.'));
+            $this->info("   • Margin: {$summary->rasio_margin}%");
+            $this->info("   • Margin Shopee: {$summary->rasio_margin_shopee}%");
+            $this->info("   • Margin Tiktok: {$summary->rasio_margin_tiktok}%");
+            $this->line("");
+
+            $this->info("📈 PERFORMANCE METRICS:");
+            $this->info("   • AOV: Rp " . number_format($summary->aov, 0, ',', '.'));
+            $this->info("   • AOV Shopee: Rp " . number_format(($summary->total_income_count_shopee > 0 ? $summary->total_penghasilan_shopee / $summary->total_income_count_shopee : 0), 0, ',', '.'));
+            $this->info("   • AOV Tiktok: Rp " . number_format(($summary->total_income_count_tiktok > 0 ? $summary->total_penghasilan_tiktok / $summary->total_income_count_tiktok : 0), 0, ',', '.'));
+            $this->line("");
+
+        } catch (\Exception $e) {
+            $this->error("❌ Failed to generate summary: " . $e->getMessage());
+            $this->error("💡 Check laravel.log for details");
+            return 1;
+        }
+
+        return 0;
+    }
+}

@@ -1,0 +1,280 @@
+<nav class="pc-sidebar">
+    <div class="navbar-wrapper">
+        <div class="m-header">
+            <a href="/dashboard" class="b-brand text-primary" style="display: flex; align-items: center;">
+                <!-- ========   Change your logo from here   ============ -->
+                <img src="{{ asset('LF.JPG') }}" alt="Logo" width="60px">
+                <span style="font-size: 1.2em; font-weight: bold; font-family: 'Arial Black', Arial, sans-serif; margin-top: 15px;">Lidya Fashion</span>
+            </a>
+        </div>
+        <div class="navbar-content">
+            <ul class="pc-navbar">
+                <li class="pc-item">
+                    <a href="/dashboard" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
+                        <span class="pc-mtext">Dashboard</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/toko" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-building-store"></i></span>
+                        <span class="pc-mtext">Daftar Toko</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/periodes" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-calendar"></i></span>
+                        <span class="pc-mtext">Daftar Periode</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/produks" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-package"></i></span>
+                        <span class="pc-mtext">Daftar Produk</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/orders" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-shopping-cart"></i></span>
+                        <span class="pc-mtext">Daftar Order</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/incomes" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-cash"></i></span>
+                        <span class="pc-mtext">Daftar Income</span>
+                    </a>
+                </li>
+                {{-- <li class="pc-item">
+                    <a href="/monthly-summaries" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-report-analytics"></i></span>
+                        <span class="pc-mtext">Total Bulanan</span>
+                    </a>
+                </li> --}}
+                <li class="pc-item">
+                    <a href="/incomes/detailhasil" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-chart-bar"></i></span>
+                        <span class="pc-mtext">Hasil</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/monthly-finances" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-report-analytics"></i></span>
+                        <span class="pc-mtext">Summary & Output</span>
+                    </a>
+                </li>
+                {{-- <li class="pc-item">
+                    <a href="/rekaps" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-chart-bar"></i></span>
+                        <span class="pc-mtext">Rekap</span>
+                    </a>
+                </li> --}}
+                <li class="pc-item">
+                    <a href="/rekaps/hasil" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-chart-line"></i></span>
+                        <span class="pc-mtext">Rekap Hasil</span>
+                    </a>
+                </li>
+
+                {{-- <li class="pc-item pc-hasmenu">
+                    <a href="#!" class="pc-link"><span class="pc-micon"><i class="ti ti-chart-bar"></i>
+                    </span><span class="pc-mtext">Hasil</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
+                    <ul class="pc-submenu">
+                        <li class="pc-item"><a class="pc-link" href="/incomes/hasil">Rekap Hasil</a></li>
+                        <li class="pc-item"><a class="pc-link" href="/incomes/detailhasil">Detail Hasil</a></li>
+                    </ul>
+                </li> --}}
+                {{-- <li class="pc-item pc-hasmenu">
+                    <a href="#!" class="pc-link"><span class="pc-micon"><i class="ti ti-report-analytics"></i>
+                    </span><span class="pc-mtext">Summary & Output</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
+                    <ul class="pc-submenu">
+                        <li class="pc-item"><a class="pc-link" href="/monthly-summaries">Monthly Summary</a></li>
+                        <li class="pc-item"><a class="pc-link" href="/monthly-finances">Summary & Output</a></li>
+                    </ul>
+                </li> --}}
+                <li class="pc-item pc-caption">
+                    <label style="color: red;">Pengembalian / Pembatalan</label>
+                    <i class="ti ti-news"></i>
+                </li>
+                <li class="pc-item">
+                    <a href="/bandings" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-report-analytics"></i></span>
+                        <span class="pc-mtext">Daftar Banding</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/bandings/search" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-qrcode"></i></span>
+                        <span class="pc-mtext">Scan Resi</span>
+                    </a>
+                </li>
+                {{-- <li class="pc-item">
+                    <a href="/bandings/search-ok" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-barcode"></i></span>
+                        <span class="pc-mtext">Scan Resi V2</span>
+                    </a>
+                </li> --}}
+                <li class="pc-item">
+                    <a href="/scan-ok" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-barcode"></i></span>
+                        <span class="pc-mtext">Scan Resi V2</span>
+                    </a>
+                </li>
+                {{-- <li class="pc-item">
+                    <a href="/ok" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-circle-check"></i></span>
+                        <span class="pc-mtext">Daftar Status Diterima OK</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/belum" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-circle-x"></i></span>
+                        <span class="pc-mtext">Status Belum Diterima</span>
+                    </a>
+                </li> --}}
+                <li class="pc-item">
+                    <a href="/data-ok" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-circle-check"></i></span>
+                        <span class="pc-mtext">Daftar Status Diterima OK</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/data-belum" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-circle-x"></i></span>
+                        <span class="pc-mtext">Status Belum Diterima</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/pengembalian-penukaran" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-refresh"></i></span>
+                        <span class="pc-mtext">Pengembalian_Penukaran</span>
+                    </a>
+                </li>
+                <li class="pc-item pc-caption">
+                    <label style="color: red;">Pengiriman Sampel</label>
+                    <i class="ti ti-news"></i>
+                </li>
+                <li class="pc-item">
+                    <a href="/sampels" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-report-analytics"></i></span>
+                        <span class="pc-mtext">Daftar Sampel</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/pengiriman-sampels" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-truck"></i></span>
+                        <span class="pc-mtext">Daftar Pengiriman Sampel</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/pengiriman-sampels-rekap" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-file-text"></i></span>
+                        <span class="pc-mtext">Rekap Pengiriman Sampel</span>
+                    </a>
+                </li>
+                {{-- <li class="pc-item">
+                    <a href="/incomes/hasil" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-chart-bar"></i></span>
+                        <span class="pc-mtext">Hasil</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/monthly-finances" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-report-analytics"></i></span>
+                        <span class="pc-mtext">Summary & Output</span>
+                    </a>
+                </li> --}}
+                {{-- <li class="pc-item pc-caption">
+                    <label>UI Components</label>
+                    <i class="ti ti-dashboard"></i>
+                </li>
+                <li class="pc-item">
+                    <a href="../elements/bc_typography.html" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-typography"></i></span>
+                        <span class="pc-mtext">Typography</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="../elements/bc_color.html" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-color-swatch"></i></span>
+                        <span class="pc-mtext">Color</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="../elements/icon-tabler.html" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-plant-2"></i></span>
+                        <span class="pc-mtext">Icons</span>
+                    </a>
+                </li>
+
+                <li class="pc-item pc-caption">
+                    <label>Pages</label>
+                    <i class="ti ti-news"></i>
+                </li>
+                <li class="pc-item">
+                    <a href="../pages/login.html" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-lock"></i></span>
+                        <span class="pc-mtext">Login</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="../pages/register.html" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-user-plus"></i></span>
+                        <span class="pc-mtext">Register</span>
+                    </a>
+                </li> --}}
+
+                {{-- <li class="pc-item pc-caption">
+                    <label>Other</label>
+                    <i class="ti ti-brand-chrome"></i>
+                </li>
+                <li class="pc-item pc-hasmenu">
+                    <a href="#!" class="pc-link"><span class="pc-micon"><i class="ti ti-menu"></i></span><span
+                            class="pc-mtext">Menu
+                            levels</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
+                    <ul class="pc-submenu">
+                        <li class="pc-item"><a class="pc-link" href="#!">Level 2.1</a></li>
+                        <li class="pc-item pc-hasmenu">
+                            <a href="#!" class="pc-link">Level 2.2<span class="pc-arrow"><i
+                                        data-feather="chevron-right"></i></span></a>
+                            <ul class="pc-submenu">
+                                <li class="pc-item"><a class="pc-link" href="#!">Level 3.1</a></li>
+                                <li class="pc-item"><a class="pc-link" href="#!">Level 3.2</a></li>
+                                <li class="pc-item pc-hasmenu">
+                                    <a href="#!" class="pc-link">Level 3.3<span class="pc-arrow"><i
+                                                data-feather="chevron-right"></i></span></a>
+                                    <ul class="pc-submenu">
+                                        <li class="pc-item"><a class="pc-link" href="#!">Level 4.1</a></li>
+                                        <li class="pc-item"><a class="pc-link" href="#!">Level 4.2</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="pc-item pc-hasmenu">
+                            <a href="#!" class="pc-link">Level 2.3<span class="pc-arrow"><i
+                                        data-feather="chevron-right"></i></span></a>
+                            <ul class="pc-submenu">
+                                <li class="pc-item"><a class="pc-link" href="#!">Level 3.1</a></li>
+                                <li class="pc-item"><a class="pc-link" href="#!">Level 3.2</a></li>
+                                <li class="pc-item pc-hasmenu">
+                                    <a href="#!" class="pc-link">Level 3.3<span class="pc-arrow"><i
+                                                data-feather="chevron-right"></i></span></a>
+                                    <ul class="pc-submenu">
+                                        <li class="pc-item"><a class="pc-link" href="#!">Level 4.1</a></li>
+                                        <li class="pc-item"><a class="pc-link" href="#!">Level 4.2</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li class="pc-item">
+                    <a href="../other/sample-page.html" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-brand-chrome"></i></span>
+                        <span class="pc-mtext">Sample page</span>
+                    </a>
+                </li> --}}
+            </ul>
+        </div>
+    </div>
+</nav>
