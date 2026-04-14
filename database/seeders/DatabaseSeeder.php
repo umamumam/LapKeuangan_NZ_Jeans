@@ -26,8 +26,7 @@ class DatabaseSeeder extends Seeder
 
         // Seed data toko
         $tokos = [
-            ['nama' => 'Lidya Fashion'],
-            ['nama' => 'Lova Jeans'],
+            ['nama' => 'NZ JEANS'],
         ];
 
         foreach ($tokos as $toko) {
@@ -35,7 +34,6 @@ class DatabaseSeeder extends Seeder
         }
 
         $this->command->info('Data toko berhasil ditambahkan:');
-        $this->command->info('- Lidya Fashion');
-        $this->command->info('- Lova Jeans');
+        $this->command->info('- NZ JEANS');
     }
 }

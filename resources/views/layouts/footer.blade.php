@@ -2,13 +2,13 @@
     <div class="footer-wrapper container-fluid">
         <div class="row">
             <div class="col-sm my-1">
-                <p class="m-0">Mantis &#9829; crafted by Team <a href="https://themeforest.net/user/codedthemes"
-                        target="_blank">Codedthemes</a> Distributed by <a href="https://themewagon.com/">ThemeWagon</a>.
-                </p>
+                <p class="m-0">Copyright &copy; {{ date('Y') }} <a href="/dashboard">NZ Jeans</a>. All rights reserved.</p>
             </div>
             <div class="col-auto my-1">
                 <ul class="list-inline footer-link mb-0">
-                    <li class="list-inline-item"><a href="../index.html">Home</a></li>
+                    <li class="list-inline-item"><a href="/dashboard">Home</a></li>
+                    <li class="list-inline-item"><a href="#">Privacy Policy</a></li>
+                    <li class="list-inline-item"><a href="#">Terms & Conditions</a></li>
                 </ul>
             </div>
         </div>

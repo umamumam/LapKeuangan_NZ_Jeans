@@ -16,7 +16,7 @@
     <meta name="author" content="CodedThemes">
 
     <!-- Favicon -->
-    <link rel="icon" href="{{ asset('mantis/assets/images/favicon.svg') }}" type="image/x-icon">
+    <link rel="icon" href="{{ asset('NZ1.png') }}" type="image/x-icon">
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap"
@@ -52,7 +52,7 @@
             <div class="m-header">
                 <a href="../dashboard/index.html" class="b-brand text-primary">
                     <!-- ========   Change your logo from here   ============ -->
-                    <img src="{{ asset('mantis/assets/images/logo-dark.svg') }}" alt="Logo">
+                    <img src="{{ asset('NZ.png') }}" alt="Logo" width="150px">
                 </a>
             </div>
             <div class="navbar-content">
@@ -692,13 +692,13 @@
         <div class="footer-wrapper container-fluid">
             <div class="row">
                 <div class="col-sm my-1">
-                    <p class="m-0">Mantis &#9829; crafted by Team <a href="https://themeforest.net/user/codedthemes"
-                            target="_blank">Codedthemes</a> Distributed by <a
-                            href="https://themewagon.com/">ThemeWagon</a>.</p>
+                    <p class="m-0">Copyright &copy; {{ date('Y') }} <a href="/dashboard">NZ Jeans</a>. All rights reserved.</p>
                 </div>
                 <div class="col-auto my-1">
                     <ul class="list-inline footer-link mb-0">
-                        <li class="list-inline-item"><a href="../index.html">Home</a></li>
+                        <li class="list-inline-item"><a href="/dashboard">Home</a></li>
+                        <li class="list-inline-item"><a href="#">Privacy Policy</a></li>
+                        <li class="list-inline-item"><a href="#">Terms & Conditions</a></li>
                     </ul>
                 </div>
             </div>

@@ -3,8 +3,10 @@
         <div class="m-header">
             <a href="/dashboard" class="b-brand text-primary" style="display: flex; align-items: center;">
                 <!-- ========   Change your logo from here   ============ -->
-                <img src="{{ asset('LF.JPG') }}" alt="Logo" width="60px">
-                <span style="font-size: 1.2em; font-weight: bold; font-family: 'Arial Black', Arial, sans-serif; margin-top: 15px;">Lidya Fashion</span>
+                <img src="{{ asset('NZ.png') }}" alt="Logo" width="150px">
+                {{-- <span
+                    style="font-size: 1.2em; font-weight: bold; font-family: 'Arial Black', Arial, sans-serif; margin-top: 15px;">NZ
+                    Jeans</span> --}}
             </a>
         </div>
         <div class="navbar-content">
@@ -78,7 +80,8 @@
 
                 {{-- <li class="pc-item pc-hasmenu">
                     <a href="#!" class="pc-link"><span class="pc-micon"><i class="ti ti-chart-bar"></i>
-                    </span><span class="pc-mtext">Hasil</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
+                        </span><span class="pc-mtext">Hasil</span><span class="pc-arrow"><i
+                                data-feather="chevron-right"></i></span></a>
                     <ul class="pc-submenu">
                         <li class="pc-item"><a class="pc-link" href="/incomes/hasil">Rekap Hasil</a></li>
                         <li class="pc-item"><a class="pc-link" href="/incomes/detailhasil">Detail Hasil</a></li>
@@ -86,7 +89,8 @@
                 </li> --}}
                 {{-- <li class="pc-item pc-hasmenu">
                     <a href="#!" class="pc-link"><span class="pc-micon"><i class="ti ti-report-analytics"></i>
-                    </span><span class="pc-mtext">Summary & Output</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
+                        </span><span class="pc-mtext">Summary & Output</span><span class="pc-arrow"><i
+                                data-feather="chevron-right"></i></span></a>
                     <ul class="pc-submenu">
                         <li class="pc-item"><a class="pc-link" href="/monthly-summaries">Monthly Summary</a></li>
                         <li class="pc-item"><a class="pc-link" href="/monthly-finances">Summary & Output</a></li>

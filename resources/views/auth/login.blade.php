@@ -12,7 +12,7 @@
         content="Mantis, Dashboard UI Kit, Bootstrap 5, Admin Template, Admin Dashboard, CRM, CMS, Bootstrap Admin Template">
     <meta name="author" content="CodedThemes">
 
-    <link rel="icon" href="{{ asset('LF1.png') }}" type="image/x-icon">
+    <link rel="icon" href="{{ asset('NZ1.png') }}" type="image/x-icon">
 
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap"
@@ -45,7 +45,7 @@
             <div class="auth-form">
                 <div class="auth-header">
                     {{-- PATH LOGO TELAH DIPERBAIKI --}}
-                    <a href="#"><img src="{{ asset('LFL1.png') }}" alt="Logo" width="250px"></a>
+                    <a href="#"><img src="{{ asset('NZ.png') }}" alt="Logo" width="250px"></a>
                 </div>
                 <div class="card my-5">
                     <div class="card-body">
@@ -58,15 +58,18 @@
 
                             <div class="form-group mb-3">
                                 <label class="form-label">Email Address</label>
-                                <input type="email" name="email" class="form-control" placeholder="Email Address" required>
+                                <input type="email" name="email" class="form-control" placeholder="Email Address"
+                                    required>
                             </div>
                             <div class="form-group mb-3">
                                 <label class="form-label">Password</label>
-                                <input type="password" name="password" class="form-control" placeholder="Password" required>
+                                <input type="password" name="password" class="form-control" placeholder="Password"
+                                    required>
                             </div>
                             <div class="d-flex mt-1 justify-content-between">
                                 <div class="form-check">
-                                    <input class="form-check-input input-primary" type="checkbox" name="remember" id="remember_me">
+                                    <input class="form-check-input input-primary" type="checkbox" name="remember"
+                                        id="remember_me">
                                     <label class="form-check-label text-muted" for="remember_me">Keep me sign in</label>
                                 </div>
                                 <a href="#" class="text-secondary f-w-400">Forgot Password?</a>
@@ -79,7 +82,7 @@
                 </div>
                 <div class="auth-footer row">
                     <div class="col my-1">
-                        <p class="m-0">Copyright © <a href="#">Lidya Fashion</a></p>
+                        <p class="m-0">Copyright © <a href="#">NZ Jeans</a></p>
                     </div>
                     <div class="col-auto my-1">
                         <ul class="list-inline footer-link mb-0">
@@ -111,4 +114,5 @@
     </script>
 
 </body>
+
 </html>
