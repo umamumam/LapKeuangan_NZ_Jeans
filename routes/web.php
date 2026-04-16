@@ -159,6 +159,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/pengembalian-penukaran/export/filtered', [PengembalianPenukaranController::class, 'exportFiltered'])->name('pengembalian-penukaran.export.filtered');
     Route::resource('pengembalian-penukaran', PengembalianPenukaranController::class);
     Route::get('/partners', [PartnerController::class, 'index'])->name('partners.index');
+    Route::get('/partners/reseller/{reseller}', [PartnerController::class, 'showReseller'])->name('partners.reseller.show');
+    Route::get('/partners/supplier/{supplier}', [PartnerController::class, 'showSupplier'])->name('partners.supplier.show');
     Route::resource('resellers', ResellerController::class);
     Route::resource('suppliers', SupplierController::class);
     Route::get('/barangs/export', [BarangController::class, 'export'])->name('barangs.export');
