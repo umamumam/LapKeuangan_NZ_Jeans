@@ -20,6 +20,7 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\ResellerTransactionController;
+use App\Http\Controllers\SupplierTransactionController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -171,6 +172,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/reseller_transactions/reseller/{reseller}/pay_debt', [ResellerTransactionController::class, 'payDebt'])->name('reseller_transactions.pay_debt');
     Route::get('/reseller_transactions/reseller/{reseller}', [ResellerTransactionController::class, 'resellerShow'])->name('reseller_transactions.show_reseller');
     Route::resource('reseller_transactions', ResellerTransactionController::class);
+
+    // Supplier Transaction Routes
+    Route::post('/supplier-transactions/supplier/{supplier}/pay-debt', [SupplierTransactionController::class, 'payDebt'])->name('supplier_transactions.pay_debt');
+    Route::get('/supplier-transactions/supplier/{supplier}', [SupplierTransactionController::class, 'supplierShow'])->name('supplier_transactions.show_supplier');
+    Route::resource('supplier_transactions', SupplierTransactionController::class);
 });
 
 require __DIR__ . '/auth.php';

@@ -1,0 +1,35 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('supplier_transactions', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('supplier_id')->constrained('suppliers')->onDelete('cascade');
+            $table->date('tgl');
+            $table->integer('total_barang');
+            $table->bigInteger('total_uang');
+            $table->integer('retur')->default(0);
+            $table->bigInteger('bayar');
+            $table->bigInteger('total_tagihan');
+            $table->string('bukti_tf')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('supplier_transactions');
+    }
+};

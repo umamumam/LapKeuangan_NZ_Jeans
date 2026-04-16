@@ -37,4 +37,10 @@ class Barang extends Model
         return $this->belongsToMany(ResellerTransaction::class, 'reseller_transaction_details', 'barang_id', 'reseller_transaction_id')
             ->withPivot('jumlah', 'subtotal', 'keuntungan');
     }
+
+    public function supplierTransactions()
+    {
+        return $this->belongsToMany(SupplierTransaction::class, 'supplier_transaction_details', 'barang_id', 'supplier_transaction_id')
+            ->withPivot('jumlah', 'subtotal');
+    }
 }
