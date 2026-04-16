@@ -15,6 +15,10 @@ use App\Http\Controllers\MonthlyFinanceController;
 use App\Http\Controllers\MonthlySummaryController;
 use App\Http\Controllers\PengirimanSampelController;
 use App\Http\Controllers\PengembalianPenukaranController;
+use App\Http\Controllers\ResellerController;
+use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\PartnerController;
+use App\Http\Controllers\BarangController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -154,6 +158,12 @@ Route::middleware('auth')->group(function () {
     Route::put('/pengembalian-penukaran/{id}/update-status', [PengembalianPenukaranController::class, 'updateStatus'])->name('pengembalian-penukaran.update-status');
     Route::get('/pengembalian-penukaran/export/filtered', [PengembalianPenukaranController::class, 'exportFiltered'])->name('pengembalian-penukaran.export.filtered');
     Route::resource('pengembalian-penukaran', PengembalianPenukaranController::class);
+    Route::get('/partners', [PartnerController::class, 'index'])->name('partners.index');
+    Route::resource('resellers', ResellerController::class);
+    Route::resource('suppliers', SupplierController::class);
+    Route::get('/barangs/export', [BarangController::class, 'export'])->name('barangs.export');
+    Route::post('/barangs/import', [BarangController::class, 'import'])->name('barangs.import');
+    Route::resource('barangs', BarangController::class);
 });
 
 require __DIR__ . '/auth.php';

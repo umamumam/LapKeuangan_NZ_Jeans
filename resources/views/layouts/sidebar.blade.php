@@ -176,6 +176,22 @@
                         <span class="pc-mtext">Rekap Pengiriman Sampel</span>
                     </a>
                 </li>
+                <li class="pc-item pc-caption">
+                    <label style="color: red;">Reseller & Supplier</label>
+                    <i class="ti ti-news"></i>
+                </li>
+                <li class="pc-item">
+                    <a href="/partners" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-users"></i></span>
+                        <span class="pc-mtext">Reseller & Supplier</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/barangs" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-box"></i></span>
+                        <span class="pc-mtext">Daftar Barang</span>
+                    </a>
+                </li>
                 {{-- <li class="pc-item">
                     <a href="/incomes/hasil" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-chart-bar"></i></span>
