@@ -8,14 +8,14 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('reseller_transaction_details', function (Blueprint $バランス) {
-            $バランス->id();
-            $バランス->foreignId('reseller_transaction_id')->constrained()->onDelete('cascade');
-            $バランス->foreignId('barang_id')->constrained()->onDelete('cascade');
-            $バランス->integer('jumlah')->default(0);
-            $バランス->integer('subtotal')->default(0);
-            $バランス->integer('keuntungan')->default(0);
-            $バランス->timestamps();
+        Schema::create('reseller_transaction_details', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('reseller_transaction_id')->constrained()->onDelete('cascade');
+            $table->foreignId('barang_id')->constrained()->onDelete('cascade');
+            $table->integer('jumlah')->default(0);
+            $table->integer('subtotal')->default(0);
+            $table->integer('keuntungan')->default(0);
+            $table->timestamps();
         });
     }
 

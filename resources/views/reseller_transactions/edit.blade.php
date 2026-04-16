@@ -6,7 +6,7 @@
                     <h5 class="mb-0 text-white"><i class="fas fa-edit me-2"></i> Edit Transaksi Reseller</h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('reseller_transactions.update', $resellerTransaction->id) }}" method="POST">
+                    <form action="{{ route('reseller_transactions.update', $resellerTransaction->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
@@ -33,6 +33,21 @@
                             <div class="col-md-4">
                                 <label class="form-label">Retur (Potong)</label>
                                 <input type="number" name="retur" class="form-control" value="{{ old('retur', $resellerTransaction->retur) }}" min="0">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-12">
+                                <label class="form-label">Bukti Transfer (Opsional)</label>
+                                @if($resellerTransaction->bukti_tf)
+                                    <div class="mb-2">
+                                        <a href="{{ asset('storage/' . $resellerTransaction->bukti_tf) }}" target="_blank">
+                                            <img src="{{ asset('storage/' . $resellerTransaction->bukti_tf) }}" alt="Bukti TF" class="img-thumbnail" style="max-height: 150px;">
+                                        </a>
+                                    </div>
+                                @endif
+                                <input type="file" name="bukti_tf" class="form-control" accept="image/*">
+                                <small class="text-muted">Upload gambar bukti transfer baru untuk mengganti yang lama.</small>
                             </div>
                         </div>
 

@@ -9,6 +9,8 @@ use App\Models\Barang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Models\ResellerPayment;
+use Illuminate\Support\Facades\Storage;
 
 class ResellerTransactionController extends Controller
 {
@@ -114,7 +116,14 @@ class ResellerTransactionController extends Controller
             $rekap[$week]['total_keuntungan'] += $trx->total_keuntungan;
         }
 
-        return view('reseller_transactions.reseller_show', compact('reseller', 'transactions', 'rekap', 'month', 'year', 'hasDebt'));
+        $payments = \App\Models\ResellerPayment::where('reseller_id', $reseller->id)
+            ->whereYear('tgl', $year)
+            ->whereMonth('tgl', $month)
+            ->orderBy('tgl', 'desc')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return view('reseller_transactions.reseller_show', compact('reseller', 'transactions', 'rekap', 'month', 'year', 'hasDebt', 'payments'));
     }
 
     public function create(Request $request)
@@ -141,7 +150,13 @@ class ResellerTransactionController extends Controller
             'details' => 'required|array|min:1',
             'details.*.barang_id' => 'required|exists:barangs,id',
             'details.*.jumlah' => 'required|integer|min:1',
+            'bukti_tf' => 'nullable|image|max:2048',
         ]);
+
+        $buktiTfPath = null;
+        if ($request->hasFile('bukti_tf')) {
+            $buktiTfPath = $request->file('bukti_tf')->store('bukti_tf', 'public');
+        }
 
         try {
             DB::beginTransaction();
@@ -159,6 +174,7 @@ class ResellerTransactionController extends Controller
                 'bayar' => $request->bayar,
                 'sisa_kurang' => 0,
                 'retur' => $request->retur ?? 0,
+                'bukti_tf' => $buktiTfPath,
             ]);
 
             foreach ($request->details as $detail) {
@@ -202,6 +218,17 @@ class ResellerTransactionController extends Controller
 
             DB::commit();
 
+            if ($request->bayar > 0) {
+                ResellerPayment::create([
+                    'reseller_id' => $request->reseller_id,
+                    'reseller_transaction_id' => $transaction->id,
+                    'tgl' => $request->tgl,
+                    'nominal' => $request->bayar,
+                    'bukti_tf' => $buktiTfPath,
+                    'keterangan' => 'Pembayaran Awal Transaksi',
+                ]);
+            }
+
             return redirect()->route('reseller_transactions.show_reseller', $request->reseller_id)->with('success', 'Transaksi reseller berhasil ditambahkan!');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -228,7 +255,16 @@ class ResellerTransactionController extends Controller
             'details' => 'required|array|min:1',
             'details.*.barang_id' => 'required|exists:barangs,id',
             'details.*.jumlah' => 'required|integer|min:1',
+            'bukti_tf' => 'nullable|image|max:2048',
         ]);
+
+        $buktiTfPath = $resellerTransaction->bukti_tf;
+        if ($request->hasFile('bukti_tf')) {
+            if ($buktiTfPath) {
+                Storage::disk('public')->delete($buktiTfPath);
+            }
+            $buktiTfPath = $request->file('bukti_tf')->store('bukti_tf', 'public');
+        }
 
         try {
             DB::beginTransaction();
@@ -273,6 +309,7 @@ class ResellerTransactionController extends Controller
                 'bayar' => $request->bayar,
                 'sisa_kurang' => $sisa_kurang,
                 'retur' => $request->retur ?? 0,
+                'bukti_tf' => $buktiTfPath,
             ]);
 
             DB::commit();
@@ -297,9 +334,17 @@ class ResellerTransactionController extends Controller
     public function payDebt(Request $request, Reseller $reseller)
     {
         $request->validate([
-            'nominal' => 'required|numeric|min:1'
+            'nominal' => 'required|numeric|min:1',
+            'bukti_tf' => 'required|image|max:2048',
+            'tgl' => 'required|date'
         ]);
 
+        $buktiTfPath = null;
+        if ($request->hasFile('bukti_tf')) {
+            $buktiTfPath = $request->file('bukti_tf')->store('bukti_tf', 'public');
+        }
+
+        $nominalAsli = $request->nominal;
         $nominal = $request->nominal;
 
         $debtTransactions = ResellerTransaction::where('reseller_id', $reseller->id)
@@ -328,6 +373,14 @@ class ResellerTransactionController extends Controller
             $trx->save();
         }
 
-        return redirect()->back()->with('success', 'Pembayaran tagihan berhasil dicatat ke transaksi terawal.');
+        ResellerPayment::create([
+            'reseller_id' => $reseller->id,
+            'tgl' => $request->tgl,
+            'nominal' => $nominalAsli,
+            'bukti_tf' => $buktiTfPath,
+            'keterangan' => 'Pelunasan Tagihan Otomatis'
+        ]);
+
+        return redirect()->back()->with('success', 'Pembayaran tagihan berhasil dicatat.');
     }
 }

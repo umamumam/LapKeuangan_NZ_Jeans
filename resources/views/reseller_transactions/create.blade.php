@@ -6,7 +6,7 @@
                     <h5 class="mb-0 text-white"><i class="fas fa-plus-circle me-2"></i> Tambah Transaksi Reseller</h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('reseller_transactions.store') }}" method="POST">
+                    <form action="{{ route('reseller_transactions.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         @if($errors->any())
@@ -33,6 +33,14 @@
                                 <label class="form-label">Retur (Potong)</label>
                                 <input type="number" name="retur" class="form-control" value="{{ old('retur', 0) }}" min="0">
                                 <small class="text-muted">Isi jumlah potong barang yang diretur (opsional).</small>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-12">
+                                <label class="form-label">Bukti Transfer (Opsional)</label>
+                                <input type="file" name="bukti_tf" class="form-control" accept="image/*">
+                                <small class="text-muted">Upload gambar bukti transfer jika ada.</small>
                             </div>
                         </div>
 

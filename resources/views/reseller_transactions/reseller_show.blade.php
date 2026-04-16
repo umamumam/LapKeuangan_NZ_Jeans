@@ -168,9 +168,9 @@
 
                     <div class="d-flex gap-2 flex-wrap">
                         @php
-                        $totalTagihanGlobal = abs($transactions->where('sisa_kurang', '<', 0)->sum('sisa_kurang'));
-                            $totalProfitGlobal = $transactions->sum('total_keuntungan');
-                            @endphp
+                            $totalTagihanGlobal = abs(\App\Models\ResellerTransaction::where('reseller_id', $reseller->id)->where('sisa_kurang', '<', 0)->sum('sisa_kurang'));
+                            $totalProfitGlobal = \App\Models\ResellerTransaction::where('reseller_id', $reseller->id)->sum('total_keuntungan');
+                        @endphp
 
                             <!-- Box Profit -->
                             <div
@@ -338,6 +338,69 @@
             </template>
             @endforeach
 
+    <!-- Payment History Card -->
+    <div class="card shadow-sm border-0 mt-4 mb-4" style="border-radius: 12px; overflow: hidden;">
+        <div class="card-header border-bottom bg-transparent pt-4 pb-3">
+            <h6 class="mb-0 fw-bold text-success"><i class="fas fa-hand-holding-usd me-2"></i> Riwayat Uang Masuk / Pembayaran</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-muted" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <tr>
+                            <th class="ps-4 py-3" style="width: 5%">#</th>
+                            <th class="py-3" style="width: 20%">Tanggal</th>
+                            <th class="py-3" style="width: 35%">Keterangan</th>
+                            <th class="py-3" style="width: 20%">Nominal Masuk</th>
+                            <th class="text-center py-3 pe-4" style="width: 20%">Bukti Transaksi</th>
+                        </tr>
+                    </thead>
+                    <tbody style="font-size: 0.9rem;">
+                        @forelse($payments as $payment)
+                        <tr>
+                            <td class="ps-4 text-muted py-3">{{ $loop->iteration }}</td>
+                            <td class="fw-medium text-dark py-3">
+                                <i class="far fa-calendar-alt text-muted me-1 d-none d-md-inline"></i>
+                                {{ \Carbon\Carbon::parse($payment->tgl)->translatedFormat('d F Y') }}
+                            </td>
+                            <td class="py-3">
+                                @if(str_contains(strtolower($payment->keterangan), 'pelunasan'))
+                                    <span class="badge bg-warning bg-opacity-25 text-dark border border-warning border-opacity-50 px-2 py-1" style="font-size: 0.75rem;">
+                                        <i class="fas fa-file-invoice-dollar me-1"></i> {{ $payment->keterangan }}
+                                    </span>
+                                @else
+                                    <span class="badge bg-info bg-opacity-25 text-primary border border-info border-opacity-50 px-2 py-1" style="font-size: 0.75rem;">
+                                        <i class="fas fa-shopping-cart me-1"></i> {{ $payment->keterangan ?? 'Pembayaran Awal' }}
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="fw-bold text-success py-3">
+                                + Rp {{ number_format($payment->nominal, 0, ',', '.') }}
+                            </td>
+                            <td class="text-center py-3 pe-4">
+                                @if($payment->bukti_tf)
+                                    <a href="{{ asset('storage/' . $payment->bukti_tf) }}" target="_blank" class="btn btn-sm btn-light text-primary border-primary border-opacity-25 shadow-sm rounded-pill px-3" style="font-size: 0.75rem;">
+                                        <i class="fas fa-image me-1"></i> Cek Bukti
+                                    </a>
+                                @else
+                                    <span class="badge bg-light text-muted fw-normal border" style="font-size: 0.75rem;"><i class="fas fa-times me-1"></i>Tanpa Bukti</span>
+                                @endif
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <div class="text-muted mb-2"><i class="fas fa-inbox fa-3x opacity-25"></i></div>
+                                <h6 class="fw-bold text-muted mb-0">Belum ada rincian uang masuk bulan ini.</h6>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
         </div>
     </div>
 
@@ -353,13 +416,17 @@
                         aria-label="Close"></button>
                 </div>
                 <form action="{{ route('reseller_transactions.pay_debt', $reseller->id) }}" method="POST"
-                    onsubmit="return confirm('Proses pembayaran tagihan ini?')">
+                    onsubmit="return confirm('Proses pembayaran tagihan ini?')" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-body p-4">
                         <div class="alert alert-info border-0 shadow-sm mb-4" style="font-size: 0.85rem;">
                             <i class="fas fa-info-circle me-2"></i>
                             Sistem akan secara otomatis memotong/melunaskan tagihan pada transaksi
                             <strong>terlama</strong> yang belum lunas.
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark">Tanggal Pembayaran</label>
+                            <input type="date" name="tgl" class="form-control" value="{{ date('Y-m-d') }}" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold text-dark">Nominal Pembayaran</label>
@@ -369,6 +436,11 @@
                                     class="form-control form-control-lg border-start-0 ps-0 text-success fw-bold"
                                     required min="1" placeholder="0">
                             </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark">Bukti Transfer</label>
+                            <input type="file" name="bukti_tf" class="form-control" accept="image/*" required>
+                            <small class="text-muted">Wajib upload bukti transfer.</small>
                         </div>
                     </div>
                     <div class="modal-footer bg-light border-0 pt-2 pb-2">

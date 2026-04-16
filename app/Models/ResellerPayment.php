@@ -4,18 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ResellerTransaction extends Model
+class ResellerPayment extends Model
 {
     protected $fillable = [
         'reseller_id',
+        'reseller_transaction_id',
         'tgl',
-        'total_barang',
-        'total_uang',
-        'total_keuntungan',
-        'bayar',
-        'sisa_kurang',
-        'retur',
+        'nominal',
         'bukti_tf',
+        'keterangan'
     ];
 
     public function reseller()
@@ -23,8 +20,8 @@ class ResellerTransaction extends Model
         return $this->belongsTo(Reseller::class);
     }
 
-    public function details()
+    public function transaction()
     {
-        return $this->hasMany(ResellerTransactionDetail::class);
+        return $this->belongsTo(ResellerTransaction::class, 'reseller_transaction_id');
     }
 }
