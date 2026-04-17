@@ -17,33 +17,37 @@ class ResellerController extends Controller
     {
         $request->validate([
             'nama' => 'required|string|max:100|unique:resellers,nama',
+            'hutang_awal' => 'nullable|numeric|min:0',
         ]);
 
         Reseller::create([
             'nama' => $request->nama,
+            'hutang_awal' => $request->hutang_awal ?? 0,
         ]);
 
-        return redirect()->route('partners.index')->with('success', 'Reseller berhasil ditambahkan!');
+        return redirect()->back()->with('success', 'Reseller berhasil ditambahkan!');
     }
 
     public function update(Request $request, Reseller $reseller)
     {
         $request->validate([
             'nama' => 'required|string|max:100|unique:resellers,nama,' . $reseller->id,
+            'hutang_awal' => 'nullable|numeric|min:0',
         ]);
 
         $reseller->update([
             'nama' => $request->nama,
+            'hutang_awal' => $request->hutang_awal ?? 0,
         ]);
 
-        return redirect()->route('partners.index')->with('success', 'Reseller berhasil diperbarui!');
+        return redirect()->back()->with('success', 'Reseller berhasil diperbarui!');
     }
 
     public function destroy(Reseller $reseller)
     {
         $reseller->delete();
 
-        return redirect()->route('partners.index')->with('success', 'Reseller berhasil dihapus!');
+        return redirect()->back()->with('success', 'Reseller berhasil dihapus!');
     }
 
     public function show(Reseller $reseller)

@@ -17,33 +17,37 @@ class SupplierController extends Controller
     {
         $request->validate([
             'nama' => 'required|string|max:100|unique:suppliers,nama',
+            'hutang_awal' => 'nullable|numeric|min:0',
         ]);
 
         Supplier::create([
             'nama' => $request->nama,
+            'hutang_awal' => $request->hutang_awal ?? 0,
         ]);
 
-        return redirect()->route('partners.index')->with('success', 'Supplier berhasil ditambahkan!');
+        return redirect()->back()->with('success', 'Supplier berhasil ditambahkan!');
     }
 
     public function update(Request $request, Supplier $supplier)
     {
         $request->validate([
             'nama' => 'required|string|max:100|unique:suppliers,nama,' . $supplier->id,
+            'hutang_awal' => 'nullable|numeric|min:0',
         ]);
 
         $supplier->update([
             'nama' => $request->nama,
+            'hutang_awal' => $request->hutang_awal ?? 0,
         ]);
 
-        return redirect()->route('partners.index')->with('success', 'Supplier berhasil diperbarui!');
+        return redirect()->back()->with('success', 'Supplier berhasil diperbarui!');
     }
 
     public function destroy(Supplier $supplier)
     {
         $supplier->delete();
 
-        return redirect()->route('partners.index')->with('success', 'Supplier berhasil dihapus!');
+        return redirect()->back()->with('success', 'Supplier berhasil dihapus!');
     }
 
     public function show(Supplier $supplier)
