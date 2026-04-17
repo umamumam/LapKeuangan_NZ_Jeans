@@ -2,8 +2,11 @@
     <div class="pc-container">
         <div class="pc-content">
             <div class="card shadow border-0" style="border-radius: 15px; overflow: hidden;">
-                <div class="card-header border-0 text-white" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
+                <div class="card-header border-0 text-white d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
                     <h5 class="mb-0 text-white"><i class="fas fa-plus-circle me-2"></i> Tambah Transaksi Reseller</h5>
+                    <div id="priceModeIndicator" class="badge bg-white text-primary py-2 px-3 shadow-sm d-none" style="font-size: 0.85rem; border-radius: 20px; border: 1px solid #4e73df;">
+                        <i class="fas fa-tag me-1"></i> Mode: <span id="priceModeText">Loading...</span>
+                    </div>
                 </div>
                 <div class="card-body">
                     <form action="{{ route('reseller_transactions.store') }}" method="POST" enctype="multipart/form-data">
@@ -52,7 +55,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>Barang</th>
-                                        <th style="width: 250px">Harga Per Potong</th>
+                                        <th style="width: 250px" id="hargaHeader">Harga Per Potong</th>
                                         <th style="width: 150px">Jumlah</th>
                                         <th style="width: 250px">Subtotal</th>
                                         <th style="width: 80px" class="text-center">Aksi</th>
@@ -108,11 +111,14 @@
     <div class="d-none" id="barangOptionsMaster">
         <option value="">-- Pilih Barang --</option>
         @foreach($barangs as $barang)
-        @php
-            $harga = $barang->hpp ?? 0;
-        @endphp
-        <option value="{{ $barang->id }}" data-harga="{{ $harga }}"
-            data-reseller-id="{{ $barang->reseller_id }}">{{ $barang->namabarang }} {{ $barang->ukuran ? ' - ' .
+        <option value="{{ $barang->id }}" 
+            data-hpp="{{ $barang->hpp ?? 0 }}"
+            data-jual-potong="{{ $barang->hargajual_perpotong ?? 0 }}"
+            data-jual-lusin="{{ $barang->hargajual_perlusin ?? 0 }}"
+            data-grosir="{{ $barang->harga_grosir ?? 0 }}"
+            data-beli-potong="{{ $barang->hargabeli_perpotong ?? 0 }}"
+            data-reseller-id="{{ $barang->reseller_id }}"
+            data-supplier-id="{{ $barang->supplier_id }}">{{ $barang->namabarang }} {{ $barang->ukuran ? ' - ' .
             $barang->ukuran : '' }}</option>
         @endforeach
     </div>
@@ -130,6 +136,53 @@
             const btnUangPas = document.getElementById('btn-uang-pas');
 
             let rowIdx = 0;
+            let currentPriceMode = 'jual_potong'; 
+
+            // Popup pilihan harga dengan HTML agar bisa lebih dari 3 tombol
+            Swal.fire({
+                title: 'Pilih Mode Harga',
+                html: `
+                    <p>Silakan pilih jenis harga yang akan digunakan untuk transaksi ini:</p>
+                    <div class="d-grid gap-2 mt-3">
+                        <button type="button" class="btn btn-outline-primary price-mode-btn" data-mode="hpp">HPP</button>
+                        <button type="button" class="btn btn-outline-primary price-mode-btn" data-mode="jual_potong">Harga Jual Per Potong</button>
+                        <button type="button" class="btn btn-outline-primary price-mode-btn" data-mode="jual_lusin">Harga Jual Per Lusin</button>
+                        <button type="button" class="btn btn-outline-primary price-mode-btn" data-mode="grosir">Harga Grosir</button>
+                    </div>
+                `,
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    const content = Swal.getHtmlContainer();
+                    const buttons = content.querySelectorAll('.price-mode-btn');
+                    buttons.forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            currentPriceMode = btn.getAttribute('data-mode');
+                            Swal.close();
+                            
+                            Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'info',
+                            title: 'Mode Aktif: ' + btn.textContent,
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+
+                        // Update Indicator and Header
+                        document.getElementById('priceModeIndicator').classList.remove('d-none');
+                        document.getElementById('priceModeText').textContent = btn.textContent;
+                        document.getElementById('hargaHeader').textContent = btn.textContent;
+
+                        // Refresh any rows already added
+                        document.querySelectorAll('.barang-select').forEach(select => {
+                            select.dispatchEvent(new Event('change'));
+                        });
+                    });
+                });
+            }
+        });
 
             function formatRupiah(number) {
                 return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
@@ -140,7 +193,11 @@
                 let optionsHtml = '';
                 barangOptionsMaster.forEach(opt => {
                     const resellerId = opt.getAttribute('data-reseller-id');
-                    if (opt.value === "" || !resellerId || resellerId === selectedReseller) {
+                    const supplierId = opt.getAttribute('data-supplier-id');
+                    
+                    // Kondisi umum: reseller_id null DAN supplier_id null
+                    // Kondisi khusus: reseller_id cocok
+                    if (opt.value === "" || resellerId === selectedReseller || (!resellerId && !supplierId)) {
                         optionsHtml += opt.outerHTML;
                     }
                 });
@@ -203,7 +260,8 @@
                         <div class="input-group">
                             <span class="input-group-text bg-light">Rp</span>
                             <input type="text" class="form-control subtotal-display bg-light" readonly value="0">
-                            <input type="hidden" class="subtotal-input" value="0">
+                            <input type="hidden" name="details[${rowIdx}][subtotal]" class="subtotal-input" value="0">
+                            <input type="hidden" name="details[${rowIdx}][keuntungan]" class="keuntungan-input" value="0">
                         </div>
                     </td>
                     <td class="text-center">
@@ -222,13 +280,29 @@
 
                 function updateRow() {
                     const option = select.options[select.selectedIndex];
-                    const harga = parseFloat(option.getAttribute('data-harga')) || 0;
+                    let harga = 0;
+                    
+                    if (currentPriceMode === 'hpp') {
+                        harga = parseFloat(option.getAttribute('data-hpp')) || 0;
+                    } else if (currentPriceMode === 'jual_potong') {
+                        harga = parseFloat(option.getAttribute('data-jual-potong')) || 0;
+                    } else if (currentPriceMode === 'jual_lusin') {
+                        harga = parseFloat(option.getAttribute('data-jual-lusin')) || 0;
+                    } else if (currentPriceMode === 'grosir') {
+                        harga = parseFloat(option.getAttribute('data-grosir')) || 0;
+                    }
+                    
                     const jumlah = parseFloat(jumlahInput.value) || 0;
                     const subtotal = harga * jumlah;
+
+                    // Hitung keuntungan: (Harga Terpilih - Harga Beli Potong) * Jumlah
+                    const hargaBeli = parseFloat(option.getAttribute('data-beli-potong')) || 0;
+                    const keuntungan = (harga - hargaBeli) * jumlah;
 
                     hargaDisplay.value = new Intl.NumberFormat('id-ID').format(harga);
                     subtotalDisplay.value = new Intl.NumberFormat('id-ID').format(subtotal);
                     subtotalInput.value = subtotal;
+                    tr.querySelector('.keuntungan-input').value = keuntungan;
 
                     calculateTotals();
                 }

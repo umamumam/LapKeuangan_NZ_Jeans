@@ -147,6 +147,7 @@ class SupplierTransactionController extends Controller
             'details' => 'required|array|min:1',
             'details.*.barang_id' => 'required|exists:barangs,id',
             'details.*.jumlah' => 'required|integer|min:1',
+            'details.*.subtotal' => 'required|integer',
             'bukti_tf' => 'nullable|image|max:2048',
         ]);
 
@@ -173,18 +174,7 @@ class SupplierTransactionController extends Controller
             ]);
 
             foreach ($request->details as $detail) {
-                $barang = Barang::find($detail['barang_id']);
-                // Gunakan hargajual_perpotong sebagai acuan subtotal (seperti lapkeuangan)
-                // Di lapkeuangan dia pakai $barang->hpp * $detail['jumlah'] - 
-                // tapi di lapkeuangan hpp itu sebenarnya harga satuan jual ke supplier? 
-                // Mari kita cek Barang NZ_Jeans: ada hargabeli_perpotong dan hargajual_perpotong.
-                // Biasanya transaksi supplier = jual ke supplier. Jadi pakai hargajual_perpotong.
-                
-                $satuan = $barang->hpp ?? 0;
-                $subtotal = $satuan * $detail['jumlah'];
-                
-                if (!empty($barang->hargajual_perpotong) && !empty($barang->hargabeli_perpotong)) {
-                }
+                $subtotal = $detail['subtotal'];
 
                 SupplierTransactionDetail::create([
                     'supplier_transaction_id' => $transaction->id,
@@ -244,6 +234,7 @@ class SupplierTransactionController extends Controller
             'details' => 'required|array|min:1',
             'details.*.barang_id' => 'required|exists:barangs,id',
             'details.*.jumlah' => 'required|integer|min:1',
+            'details.*.subtotal' => 'required|integer',
             'bukti_tf' => 'nullable|image|max:2048',
         ]);
 
@@ -265,12 +256,7 @@ class SupplierTransactionController extends Controller
             SupplierTransactionDetail::where('supplier_transaction_id', $supplierTransaction->id)->delete();
 
             foreach ($request->details as $detail) {
-                $barang = Barang::find($detail['barang_id']);
-                $satuan = $barang->hpp ?? 0;
-                $subtotal = $satuan * $detail['jumlah'];
-                
-                if (!empty($barang->hargajual_perpotong) && !empty($barang->hargabeli_perpotong)) {
-                }
+                $subtotal = $detail['subtotal'];
 
                 SupplierTransactionDetail::create([
                     'supplier_transaction_id' => $supplierTransaction->id,

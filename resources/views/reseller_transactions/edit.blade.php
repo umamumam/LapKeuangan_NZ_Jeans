@@ -2,8 +2,16 @@
     <div class="pc-container">
         <div class="pc-content">
             <div class="card shadow border-0" style="border-radius: 15px; overflow: hidden;">
-                <div class="card-header border-0 text-white" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="card-header border-0 text-white d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                     <h5 class="mb-0 text-white"><i class="fas fa-edit me-2"></i> Edit Transaksi Reseller</h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <div id="priceModeIndicator" class="badge bg-white text-danger py-2 px-3 shadow-sm" style="font-size: 0.85rem; border-radius: 20px; border: 1px solid #f5576c;">
+                            <i class="fas fa-tag me-1"></i> Mode: <span id="priceModeText">Default</span>
+                        </div>
+                        <button type="button" id="changePriceModeBtn" class="btn btn-sm btn-light text-danger shadow-sm" style="border-radius: 20px;">
+                            <i class="fas fa-sync-alt me-1"></i> Pilih Mode Harga
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
                     <form action="{{ route('reseller_transactions.update', $resellerTransaction->id) }}" method="POST" enctype="multipart/form-data">
@@ -59,7 +67,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>Barang</th>
-                                        <th style="width: 250px">Harga Per Potong</th>
+                                        <th style="width: 250px" id="hargaHeader">Harga Per Potong</th>
                                         <th style="width: 150px">Jumlah</th>
                                         <th style="width: 250px">Subtotal</th>
                                         <th style="width: 80px" class="text-center">Aksi</th>
@@ -72,8 +80,14 @@
                                             <select name="details[{{ $index }}][barang_id]" class="form-select barang-select" required>
                                                 <option value="">-- Pilih Barang --</option>
                                                 @foreach($barangs as $barang)
-                                                @php $harga = $barang->hpp ?? 0; @endphp
-                                                <option value="{{ $barang->id }}" data-harga="{{ $harga }}" {{ $detail->barang_id == $barang->id ? 'selected' : '' }}>
+                                                <option value="{{ $barang->id }}" 
+                                                    data-hpp="{{ $barang->hpp ?? 0 }}"
+                                                    data-jual-potong="{{ $barang->hargajual_perpotong ?? 0 }}"
+                                                    data-jual-lusin="{{ $barang->hargajual_perlusin ?? 0 }}"
+                                                    data-grosir="{{ $barang->harga_grosir ?? 0 }}"
+                                                    data-beli-potong="{{ $barang->hargabeli_perpotong ?? 0 }}"
+                                                    data-reseller-id="{{ $barang->reseller_id }}"
+                                                    {{ $detail->barang_id == $barang->id ? 'selected' : '' }}>
                                                     {{ $barang->namabarang }} {{ $barang->ukuran ? ' - ' . $barang->ukuran : '' }}
                                                 </option>
                                                 @endforeach
@@ -82,7 +96,9 @@
                                         <td>
                                             <div class="input-group">
                                                 <span class="input-group-text bg-light">Rp</span>
-                                                <input type="text" class="form-control harga-display bg-light" readonly value="{{ number_format($detail->subtotal / ($detail->jumlah ?: 1), 0, ',', '.') }}">
+                                                <input type="text" class="form-control harga-display bg-light" readonly 
+                                                    value="{{ number_format($detail->subtotal / ($detail->jumlah ?: 1), 0, ',', '.') }}"
+                                                    data-original-harga="{{ $detail->subtotal / ($detail->jumlah ?: 1) }}">
                                             </div>
                                         </td>
                                         <td>
@@ -92,7 +108,8 @@
                                             <div class="input-group">
                                                 <span class="input-group-text bg-light">Rp</span>
                                                 <input type="text" class="form-control subtotal-display bg-light" readonly value="{{ number_format($detail->subtotal, 0, ',', '.') }}">
-                                                <input type="hidden" class="subtotal-input" value="{{ $detail->subtotal }}">
+                                                <input type="hidden" name="details[{{ $index }}][subtotal]" class="subtotal-input" value="{{ $detail->subtotal }}">
+                                                <input type="hidden" name="details[{{ $index }}][keuntungan]" class="keuntungan-input" value="{{ $detail->keuntungan }}">
                                             </div>
                                         </td>
                                         <td class="text-center">
@@ -148,8 +165,14 @@
     <div class="d-none" id="barangOptionsMaster">
         <option value="">-- Pilih Barang --</option>
         @foreach($barangs as $barang)
-        @php $harga = $barang->hpp ?? 0; @endphp
-        <option value="{{ $barang->id }}" data-harga="{{ $harga }}" data-reseller-id="{{ $barang->reseller_id }}">
+        <option value="{{ $barang->id }}" 
+            data-hpp="{{ $barang->hpp ?? 0 }}"
+            data-jual-potong="{{ $barang->hargajual_perpotong ?? 0 }}"
+            data-jual-lusin="{{ $barang->hargajual_perlusin ?? 0 }}"
+            data-grosir="{{ $barang->harga_grosir ?? 0 }}"
+            data-beli-potong="{{ $barang->hargabeli_perpotong ?? 0 }}"
+            data-reseller-id="{{ $barang->reseller_id }}"
+            data-supplier-id="{{ $barang->supplier_id }}">
             {{ $barang->namabarang }} {{ $barang->ukuran ? ' - ' . $barang->ukuran : '' }}
         </option>
         @endforeach
@@ -168,6 +191,54 @@
             const btnUangPas = document.getElementById('btn-uang-pas');
 
             let rowIdx = {{ $resellerTransaction->details->count() }};
+            let currentPriceMode = 'default'; // default
+
+            function showPriceModePopup() {
+                Swal.fire({
+                    title: 'Pilih Mode Harga',
+                    html: `
+                        <p>Pilih mode harga yang ingin diterapkan pada barang:</p>
+                        <div class="d-grid gap-2 mt-3">
+                            <button type="button" class="btn btn-outline-danger price-mode-btn" data-mode="hpp">HPP</button>
+                            <button type="button" class="btn btn-outline-danger price-mode-btn" data-mode="jual_potong">Harga Jual Per Potong</button>
+                            <button type="button" class="btn btn-outline-danger price-mode-btn" data-mode="jual_lusin">Harga Jual Per Lusin</button>
+                            <button type="button" class="btn btn-outline-danger price-mode-btn" data-mode="grosir">Harga Grosir</button>
+                        </div>
+                    `,
+                    showConfirmButton: false,
+                    allowOutsideClick: true,
+                    didOpen: () => {
+                        const content = Swal.getHtmlContainer();
+                        const buttons = content.querySelectorAll('.price-mode-btn');
+                        buttons.forEach(btn => {
+                            btn.addEventListener('click', () => {
+                                currentPriceMode = btn.getAttribute('data-mode');
+                                Swal.close();
+                                
+                                Swal.fire({
+                                    toast: true,
+                                    position: 'top-end',
+                                    icon: 'info',
+                                    title: 'Mode Aktif: ' + btn.textContent,
+                                    showConfirmButton: false,
+                                    timer: 3000
+                                });
+
+                                // Update Indicator and Header
+                                document.getElementById('priceModeText').textContent = btn.textContent;
+                                document.getElementById('hargaHeader').textContent = btn.textContent;
+
+                                // Refresh any rows already added
+                                document.querySelectorAll('.barang-select').forEach(select => {
+                                    select.dispatchEvent(new Event('change'));
+                                });
+                            });
+                        });
+                    }
+                });
+            }
+
+            document.getElementById('changePriceModeBtn').addEventListener('click', showPriceModePopup);
 
             function formatRupiah(number) {
                 return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
@@ -178,7 +249,11 @@
                 let optionsHtml = '';
                 barangOptionsMaster.forEach(opt => {
                     const resellerId = opt.getAttribute('data-reseller-id');
-                    if (opt.value === "" || !resellerId || resellerId === selectedReseller) {
+                    const supplierId = opt.getAttribute('data-supplier-id');
+                    
+                    // Kondisi umum: reseller_id null DAN supplier_id null
+                    // Kondisi khusus: reseller_id cocok
+                    if (opt.value === "" || resellerId === selectedReseller || (!resellerId && !supplierId)) {
                         optionsHtml += opt.outerHTML;
                     }
                 });
@@ -238,7 +313,8 @@
                         <div class="input-group">
                             <span class="input-group-text bg-light">Rp</span>
                             <input type="text" class="form-control subtotal-display bg-light" readonly value="0">
-                            <input type="hidden" class="subtotal-input" value="0">
+                            <input type="hidden" name="details[${rowIdx}][subtotal]" class="subtotal-input" value="0">
+                            <input type="hidden" name="details[${rowIdx}][keuntungan]" class="keuntungan-input" value="0">
                         </div>
                     </td>
                     <td class="text-center">
@@ -260,13 +336,33 @@
 
                 function updateRow() {
                     const option = select.options[select.selectedIndex];
-                    const harga = parseFloat(option.getAttribute('data-harga')) || 0;
+                    let harga = 0;
+                    
+                    if (currentPriceMode === 'default') {
+                        // Jika mode default (saat baru buka edit), gunakan harga asli yang tersimpan di input hidden
+                        const originalHarga = tr.querySelector('.harga-display').getAttribute('data-original-harga');
+                        harga = parseFloat(originalHarga) || 0;
+                    } else if (currentPriceMode === 'hpp') {
+                        harga = parseFloat(option.getAttribute('data-hpp')) || 0;
+                    } else if (currentPriceMode === 'jual_potong') {
+                        harga = parseFloat(option.getAttribute('data-jual-potong')) || 0;
+                    } else if (currentPriceMode === 'jual_lusin') {
+                        harga = parseFloat(option.getAttribute('data-jual-lusin')) || 0;
+                    } else if (currentPriceMode === 'grosir') {
+                        harga = parseFloat(option.getAttribute('data-grosir')) || 0;
+                    }
+                    
                     const jumlah = parseFloat(jumlahInput.value) || 0;
                     const subtotal = harga * jumlah;
+
+                    // Hitung keuntungan: (Harga Terpilih - Harga Beli Potong) * Jumlah
+                    const hargaBeli = parseFloat(option.getAttribute('data-beli-potong')) || 0;
+                    const keuntungan = (harga - hargaBeli) * jumlah;
 
                     hargaDisplay.value = new Intl.NumberFormat('id-ID').format(harga);
                     subtotalDisplay.value = new Intl.NumberFormat('id-ID').format(subtotal);
                     subtotalInput.value = subtotal;
+                    tr.querySelector('.keuntungan-input').value = keuntungan;
 
                     calculateTotals();
                 }

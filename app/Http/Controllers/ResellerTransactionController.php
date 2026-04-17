@@ -135,7 +135,17 @@ class ResellerTransactionController extends Controller
         }
 
         $reseller = Reseller::findOrFail($resellerId);
-        $barangs = Barang::where('reseller_id', $resellerId)->orderBy('namabarang')->get();
+        
+        $specificBarangs = Barang::where('reseller_id', $resellerId)->get();
+        
+        if ($specificBarangs->isNotEmpty()) {
+            $barangs = $specificBarangs->sortBy('namabarang');
+        } else {
+            $barangs = Barang::whereNull('reseller_id')
+                            ->whereNull('supplier_id')
+                            ->orderBy('namabarang')
+                            ->get();
+        }
 
         return view('reseller_transactions.create', compact('reseller', 'barangs'));
     }
@@ -150,6 +160,8 @@ class ResellerTransactionController extends Controller
             'details' => 'required|array|min:1',
             'details.*.barang_id' => 'required|exists:barangs,id',
             'details.*.jumlah' => 'required|integer|min:1',
+            'details.*.subtotal' => 'required|integer',
+            'details.*.keuntungan' => 'nullable|integer',
             'bukti_tf' => 'nullable|image|max:2048',
         ]);
 
@@ -178,21 +190,8 @@ class ResellerTransactionController extends Controller
             ]);
 
             foreach ($request->details as $detail) {
-                $barang = Barang::find($detail['barang_id']);
-                // Gunakan hargajual_perpotong sebagai acuan subtotal (seperti lapkeuangan)
-                // Di lapkeuangan dia pakai $barang->hpp * $detail['jumlah'] - 
-                // tapi di lapkeuangan hpp itu sebenarnya harga satuan jual ke reseller? 
-                // Mari kita cek Barang NZ_Jeans: ada hargabeli_perpotong dan hargajual_perpotong.
-                // Biasanya transaksi reseller = jual ke reseller. Jadi pakai hargajual_perpotong.
-                
-                $satuan = $barang->hpp ?? 0;
-                $subtotal = $satuan * $detail['jumlah'];
-                
-                // Keuntungan: (Harga Jual - Harga Beli) * Jumlah
-                $keuntungan_item = 0;
-                if (!empty($barang->hargajual_perpotong) && !empty($barang->hargabeli_perpotong)) {
-                    $keuntungan_item = ($barang->hargajual_perpotong - $barang->hargabeli_perpotong) * $detail['jumlah'];
-                }
+                $subtotal = $detail['subtotal'];
+                $keuntungan_item = $detail['keuntungan'] ?? 0;
 
                 ResellerTransactionDetail::create([
                     'reseller_transaction_id' => $transaction->id,
@@ -240,7 +239,17 @@ class ResellerTransactionController extends Controller
     {
         $resellerTransaction->load('details');
         $reseller = Reseller::findOrFail($resellerTransaction->reseller_id);
-        $barangs = Barang::where('reseller_id', $reseller->id)->orderBy('namabarang')->get();
+        
+        $specificBarangs = Barang::where('reseller_id', $reseller->id)->get();
+
+        if ($specificBarangs->isNotEmpty()) {
+            $barangs = $specificBarangs->sortBy('namabarang');
+        } else {
+            $barangs = Barang::whereNull('reseller_id')
+                            ->whereNull('supplier_id')
+                            ->orderBy('namabarang')
+                            ->get();
+        }
 
         return view('reseller_transactions.edit', compact('resellerTransaction', 'reseller', 'barangs'));
     }
@@ -255,6 +264,8 @@ class ResellerTransactionController extends Controller
             'details' => 'required|array|min:1',
             'details.*.barang_id' => 'required|exists:barangs,id',
             'details.*.jumlah' => 'required|integer|min:1',
+            'details.*.subtotal' => 'required|integer',
+            'details.*.keuntungan' => 'nullable|integer',
             'bukti_tf' => 'nullable|image|max:2048',
         ]);
 
@@ -277,14 +288,8 @@ class ResellerTransactionController extends Controller
             ResellerTransactionDetail::where('reseller_transaction_id', $resellerTransaction->id)->delete();
 
             foreach ($request->details as $detail) {
-                $barang = Barang::find($detail['barang_id']);
-                $satuan = $barang->hpp ?? 0;
-                $subtotal = $satuan * $detail['jumlah'];
-                
-                $keuntungan_item = 0;
-                if (!empty($barang->hargajual_perpotong) && !empty($barang->hargabeli_perpotong)) {
-                    $keuntungan_item = ($barang->hargajual_perpotong - $barang->hargabeli_perpotong) * $detail['jumlah'];
-                }
+                $subtotal = $detail['subtotal'];
+                $keuntungan_item = $detail['keuntungan'] ?? 0;
 
                 ResellerTransactionDetail::create([
                     'reseller_transaction_id' => $resellerTransaction->id,
