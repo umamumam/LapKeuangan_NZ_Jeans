@@ -2,19 +2,23 @@
     <div class="pc-container">
         <div class="pc-content">
             <div class="card shadow border-0" style="border-radius: 15px; overflow: hidden;">
-                <div class="card-header border-0 text-white d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="card-header border-0 text-white d-flex justify-content-between align-items-center"
+                    style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                     <h5 class="mb-0 text-white"><i class="fas fa-edit me-2"></i> Edit Transaksi Reseller</h5>
                     <div class="d-flex align-items-center gap-2">
-                        <div id="priceModeIndicator" class="badge bg-white text-danger py-2 px-3 shadow-sm" style="font-size: 0.85rem; border-radius: 20px; border: 1px solid #f5576c;">
+                        <div id="priceModeIndicator" class="badge bg-white text-danger py-2 px-3 shadow-sm"
+                            style="font-size: 0.85rem; border-radius: 20px; border: 1px solid #f5576c;">
                             <i class="fas fa-tag me-1"></i> Mode: <span id="priceModeText">Default</span>
                         </div>
-                        <button type="button" id="changePriceModeBtn" class="btn btn-sm btn-light text-danger shadow-sm" style="border-radius: 20px;">
+                        <button type="button" id="changePriceModeBtn" class="btn btn-sm btn-light text-danger shadow-sm"
+                            style="border-radius: 20px;">
                             <i class="fas fa-sync-alt me-1"></i> Pilih Mode Harga
                         </button>
                     </div>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('reseller_transactions.update', $resellerTransaction->id) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('reseller_transactions.update', $resellerTransaction->id) }}" method="POST"
+                        enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
@@ -32,15 +36,18 @@
                             <div class="col-md-4">
                                 <label class="form-label">Reseller</label>
                                 <input type="hidden" name="reseller_id" id="resellerSelect" value="{{ $reseller->id }}">
-                                <input type="text" class="form-control bg-light text-muted" value="{{ $reseller->nama }}" readonly>
+                                <input type="text" class="form-control bg-light text-muted"
+                                    value="{{ $reseller->nama }}" readonly>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Tanggal Transaksi</label>
-                                <input type="date" name="tgl" class="form-control" value="{{ old('tgl', $resellerTransaction->tgl) }}" required>
+                                <input type="date" name="tgl" class="form-control"
+                                    value="{{ old('tgl', $resellerTransaction->tgl) }}" required>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Retur (Potong)</label>
-                                <input type="number" name="retur" class="form-control" value="{{ old('retur', $resellerTransaction->retur) }}" min="0">
+                                <input type="number" name="retur" class="form-control"
+                                    value="{{ old('retur', $resellerTransaction->retur) }}" min="0">
                             </div>
                         </div>
 
@@ -48,14 +55,16 @@
                             <div class="col-md-12">
                                 <label class="form-label">Bukti Transfer (Opsional)</label>
                                 @if($resellerTransaction->bukti_tf)
-                                    <div class="mb-2">
-                                        <a href="{{ asset('storage/' . $resellerTransaction->bukti_tf) }}" target="_blank">
-                                            <img src="{{ asset('storage/' . $resellerTransaction->bukti_tf) }}" alt="Bukti TF" class="img-thumbnail" style="max-height: 150px;">
-                                        </a>
-                                    </div>
+                                <div class="mb-2">
+                                    <a href="{{ asset('storage/' . $resellerTransaction->bukti_tf) }}" target="_blank">
+                                        <img src="{{ asset('storage/' . $resellerTransaction->bukti_tf) }}"
+                                            alt="Bukti TF" class="img-thumbnail" style="max-height: 150px;">
+                                    </a>
+                                </div>
                                 @endif
                                 <input type="file" name="bukti_tf" class="form-control" accept="image/*">
-                                <small class="text-muted">Upload gambar bukti transfer baru untuk mengganti yang lama.</small>
+                                <small class="text-muted">Upload gambar bukti transfer baru untuk mengganti yang
+                                    lama.</small>
                             </div>
                         </div>
 
@@ -75,45 +84,52 @@
                                 </thead>
                                 <tbody>
                                     @foreach($resellerTransaction->details as $index => $detail)
-                                    <tr>
+                                    <tr data-original-id="{{ $detail->barang_id }}">
                                         <td>
-                                            <select name="details[{{ $index }}][barang_id]" class="form-select barang-select" required>
-                                                <option value="">-- Pilih Barang --</option>
-                                                @foreach($barangs as $barang)
-                                                <option value="{{ $barang->id }}" 
-                                                    data-hpp="{{ $barang->hpp ?? 0 }}"
-                                                    data-jual-potong="{{ $barang->hargajual_perpotong ?? 0 }}"
-                                                    data-jual-lusin="{{ $barang->hargajual_perlusin ?? 0 }}"
-                                                    data-grosir="{{ $barang->harga_grosir ?? 0 }}"
-                                                    data-beli-potong="{{ $barang->hargabeli_perpotong ?? 0 }}"
-                                                    data-reseller-id="{{ $barang->reseller_id }}"
-                                                    {{ $detail->barang_id == $barang->id ? 'selected' : '' }}>
-                                                    {{ $barang->namabarang }} {{ $barang->ukuran ? ' - ' . $barang->ukuran : '' }}
-                                                </option>
-                                                @endforeach
-                                            </select>
+                                            @php
+                                            $currentBarangName = '';
+                                            foreach($barangs as $b) {
+                                            if($b->id == $detail->barang_id) {
+                                            $currentBarangName = $b->namabarang . ($b->ukuran ? ' - ' . $b->ukuran :
+                                            '');
+                                            break;
+                                            }
+                                            }
+                                            @endphp
+                                            <input list="barang-list" class="form-control barang-input"
+                                                value="{{ $currentBarangName }}" placeholder="Cari atau ketik barang..."
+                                                required>
+                                            <input type="hidden" name="details[{{ $index }}][barang_id]"
+                                                class="barang-id-hidden" value="{{ $detail->barang_id }}">
                                         </td>
                                         <td>
                                             <div class="input-group">
                                                 <span class="input-group-text bg-light">Rp</span>
-                                                <input type="text" class="form-control harga-display bg-light" readonly 
+                                                <input type="text" class="form-control harga-display bg-light" readonly
                                                     value="{{ number_format($detail->subtotal / ($detail->jumlah ?: 1), 0, ',', '.') }}"
                                                     data-original-harga="{{ $detail->subtotal / ($detail->jumlah ?: 1) }}">
                                             </div>
                                         </td>
                                         <td>
-                                            <input type="number" name="details[{{ $index }}][jumlah]" class="form-control jumlah-input" value="{{ $detail->jumlah }}" required min="1">
+                                            <input type="number" name="details[{{ $index }}][jumlah]"
+                                                class="form-control jumlah-input" value="{{ $detail->jumlah }}" required
+                                                min="1">
                                         </td>
                                         <td>
                                             <div class="input-group">
                                                 <span class="input-group-text bg-light">Rp</span>
-                                                <input type="text" class="form-control subtotal-display bg-light" readonly value="{{ number_format($detail->subtotal, 0, ',', '.') }}">
-                                                <input type="hidden" name="details[{{ $index }}][subtotal]" class="subtotal-input" value="{{ $detail->subtotal }}">
-                                                <input type="hidden" name="details[{{ $index }}][keuntungan]" class="keuntungan-input" value="{{ $detail->keuntungan }}">
+                                                <input type="text" class="form-control subtotal-display bg-light"
+                                                    readonly
+                                                    value="{{ number_format($detail->subtotal, 0, ',', '.') }}">
+                                                <input type="hidden" name="details[{{ $index }}][subtotal]"
+                                                    class="subtotal-input" value="{{ $detail->subtotal }}">
+                                                <input type="hidden" name="details[{{ $index }}][keuntungan]"
+                                                    class="keuntungan-input" value="{{ $detail->keuntungan }}">
                                             </div>
                                         </td>
                                         <td class="text-center">
-                                            <button type="button" class="btn btn-danger btn-sm remove-row-btn"><i class="fas fa-times"></i></button>
+                                            <button type="button" class="btn btn-danger btn-sm remove-row-btn"><i
+                                                    class="fas fa-times"></i></button>
                                         </td>
                                     </tr>
                                     @endforeach
@@ -127,7 +143,8 @@
                                         </td>
                                         <td class="text-end fw-bold align-middle border-start-0">Total Tagihan</td>
                                         <td colspan="2">
-                                            <input type="text" class="form-control fw-bold border-0 bg-transparent" id="total_uang_display" readonly value="Rp 0">
+                                            <input type="text" class="form-control fw-bold border-0 bg-transparent"
+                                                id="total_uang_display" readonly value="Rp 0">
                                         </td>
                                     </tr>
                                     <tr>
@@ -135,8 +152,11 @@
                                         <td class="text-end fw-bold align-middle">Bayar Nominal</td>
                                         <td colspan="2">
                                             <div class="input-group">
-                                                <input type="number" name="bayar" class="form-control fw-bold" id="bayar" value="{{ old('bayar', $resellerTransaction->bayar) }}" required min="0">
-                                                <button type="button" class="btn btn-secondary" id="btn-uang-pas" title="Uang Pas">Pas</button>
+                                                <input type="number" name="bayar" class="form-control fw-bold"
+                                                    id="bayar" value="{{ old('bayar', $resellerTransaction->bayar) }}"
+                                                    required min="0">
+                                                <button type="button" class="btn btn-secondary" id="btn-uang-pas"
+                                                    title="Uang Pas">Pas</button>
                                             </div>
                                         </td>
                                     </tr>
@@ -144,7 +164,8 @@
                                         <td colspan="2" class="border-end-0 border-top-0"></td>
                                         <td class="text-end fw-bold align-middle">Sisa / Kurang</td>
                                         <td colspan="2">
-                                            <input type="text" class="form-control fw-bold border-0 bg-transparent" id="sisa_kurang_display" readonly value="Rp 0">
+                                            <input type="text" class="form-control fw-bold border-0 bg-transparent"
+                                                id="sisa_kurang_display" readonly value="Rp 0">
                                         </td>
                                     </tr>
                                 </tfoot>
@@ -152,7 +173,8 @@
                         </div>
 
                         <div class="d-flex justify-content-end gap-2 mt-4">
-                            <a href="{{ route('reseller_transactions.show_reseller', $reseller->id) }}" class="btn btn-secondary">Batal</a>
+                            <a href="{{ route('reseller_transactions.show_reseller', $reseller->id) }}"
+                                class="btn btn-secondary">Batal</a>
                             <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                         </div>
                     </form>
@@ -161,29 +183,23 @@
         </div>
     </div>
 
-    <!-- Hidden elements for cloning -->
-    <div class="d-none" id="barangOptionsMaster">
-        <option value="">-- Pilih Barang --</option>
+    <datalist id="barang-list">
         @foreach($barangs as $barang)
-        <option value="{{ $barang->id }}" 
-            data-hpp="{{ $barang->hpp ?? 0 }}"
+        <option value="{{ $barang->namabarang }}{{ $barang->ukuran ? ' - ' . $barang->ukuran : '' }}"
+            data-id="{{ $barang->id }}" data-hpp="{{ $barang->hpp ?? 0 }}"
             data-jual-potong="{{ $barang->hargajual_perpotong ?? 0 }}"
-            data-jual-lusin="{{ $barang->hargajual_perlusin ?? 0 }}"
-            data-grosir="{{ $barang->harga_grosir ?? 0 }}"
-            data-beli-potong="{{ $barang->hargabeli_perpotong ?? 0 }}"
-            data-reseller-id="{{ $barang->reseller_id }}"
+            data-jual-lusin="{{ $barang->hargajual_perlusin ?? 0 }}" data-grosir="{{ $barang->harga_grosir ?? 0 }}"
+            data-beli-potong="{{ $barang->hargabeli_perpotong ?? 0 }}" data-reseller-id="{{ $barang->reseller_id }}"
             data-supplier-id="{{ $barang->supplier_id }}">
-            {{ $barang->namabarang }} {{ $barang->ukuran ? ' - ' . $barang->ukuran : '' }}
         </option>
         @endforeach
-    </div>
+    </datalist>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const tableBody = document.querySelector('#detailsTable tbody');
             const addRowBtn = document.getElementById('addRowBtn');
             const resellerSelect = document.getElementById('resellerSelect');
-            const barangOptionsMaster = document.getElementById('barangOptionsMaster').querySelectorAll('option');
             
             const totalDisplay = document.getElementById('total_uang_display');
             const bayarInput = document.getElementById('bayar');
@@ -191,7 +207,7 @@
             const btnUangPas = document.getElementById('btn-uang-pas');
 
             let rowIdx = {{ $resellerTransaction->details->count() }};
-            let currentPriceMode = 'default'; // default
+            let currentPriceMode = 'default'; 
 
             function showPriceModePopup() {
                 Swal.fire({
@@ -228,9 +244,9 @@
                                 document.getElementById('priceModeText').textContent = btn.textContent;
                                 document.getElementById('hargaHeader').textContent = btn.textContent;
 
-                                // Refresh any rows already added
-                                document.querySelectorAll('.barang-select').forEach(select => {
-                                    select.dispatchEvent(new Event('change'));
+                                // Refresh existing rows so price changes
+                                document.querySelectorAll('.barang-input').forEach(input => {
+                                    input.dispatchEvent(new Event('input'));
                                 });
                             });
                         });
@@ -244,21 +260,34 @@
                 return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
             }
 
-            function getFilteredOptions() {
+            // Fungsi Filter Datalist + Sembunyikan barang yang sudah di-input di baris lain
+            function updateDatalistFilter() {
                 const selectedReseller = resellerSelect.value;
-                let optionsHtml = '';
-                barangOptionsMaster.forEach(opt => {
-                    const resellerId = opt.getAttribute('data-reseller-id');
-                    const supplierId = opt.getAttribute('data-supplier-id');
-                    
-                    // Kondisi umum: reseller_id null DAN supplier_id null
-                    // Kondisi khusus: reseller_id cocok
-                    if (opt.value === "" || resellerId === selectedReseller || (!resellerId && !supplierId)) {
-                        optionsHtml += opt.outerHTML;
+                const datalist = document.getElementById('barang-list');
+                const options = datalist.querySelectorAll('option');
+                
+                // Kumpulkan nama barang yang sudah ada di kotak input tabel
+                const usedItems = [];
+                document.querySelectorAll('.barang-input').forEach(input => {
+                    if (input.value.trim() !== "") {
+                        usedItems.push(input.value.trim());
                     }
                 });
-                return optionsHtml;
+                
+                options.forEach(opt => {
+                    const resellerId = opt.getAttribute('data-reseller-id');
+                    const supplierId = opt.getAttribute('data-supplier-id');
+                    const isUsed = usedItems.includes(opt.value);
+                    
+                    if ((resellerId === selectedReseller || (!resellerId && !supplierId)) && !isUsed) {
+                        opt.disabled = false;
+                    } else {
+                        opt.disabled = true;
+                    }
+                });
             }
+
+            resellerSelect.addEventListener('change', updateDatalistFilter);
 
             function calculateTotals() {
                 let total = 0;
@@ -292,18 +321,16 @@
             });
 
             function addRow() {
-                const optionsHtml = getFilteredOptions();
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>
-                        <select name="details[${rowIdx}][barang_id]" class="form-select barang-select" required>
-                            ${optionsHtml}
-                        </select>
+                        <input list="barang-list" class="form-control barang-input" placeholder="Cari atau ketik barang..." required>
+                        <input type="hidden" name="details[${rowIdx}][barang_id]" class="barang-id-hidden">
                     </td>
                     <td>
                         <div class="input-group">
                             <span class="input-group-text bg-light">Rp</span>
-                            <input type="text" class="form-control harga-display bg-light" readonly value="0">
+                            <input type="text" class="form-control harga-display bg-light" readonly value="0" data-original-harga="0">
                         </div>
                     </td>
                     <td>
@@ -327,7 +354,8 @@
             }
 
             function initRowEvents(tr) {
-                const select = tr.querySelector('.barang-select');
+                const barangInput = tr.querySelector('.barang-input');
+                const barangIdHidden = tr.querySelector('.barang-id-hidden');
                 const hargaDisplay = tr.querySelector('.harga-display');
                 const jumlahInput = tr.querySelector('.jumlah-input');
                 const subtotalDisplay = tr.querySelector('.subtotal-display');
@@ -335,48 +363,71 @@
                 const removeBtn = tr.querySelector('.remove-row-btn');
 
                 function updateRow() {
-                    const option = select.options[select.selectedIndex];
-                    let harga = 0;
+                    const val = barangInput.value;
+                    const datalist = document.getElementById('barang-list');
+                    const option = Array.from(datalist.options).find(opt => opt.value === val);
                     
-                    if (currentPriceMode === 'default') {
-                        // Jika mode default (saat baru buka edit), gunakan harga asli yang tersimpan di input hidden
-                        const originalHarga = tr.querySelector('.harga-display').getAttribute('data-original-harga');
-                        harga = parseFloat(originalHarga) || 0;
-                    } else if (currentPriceMode === 'hpp') {
-                        harga = parseFloat(option.getAttribute('data-hpp')) || 0;
-                    } else if (currentPriceMode === 'jual_potong') {
-                        harga = parseFloat(option.getAttribute('data-jual-potong')) || 0;
-                    } else if (currentPriceMode === 'jual_lusin') {
-                        harga = parseFloat(option.getAttribute('data-jual-lusin')) || 0;
-                    } else if (currentPriceMode === 'grosir') {
-                        harga = parseFloat(option.getAttribute('data-grosir')) || 0;
+                    let harga = 0;
+                    if (option) {
+                        barangIdHidden.value = option.getAttribute('data-id');
+                        
+                        if (currentPriceMode === 'default') {
+                            // Cek jika ID masih sama dengan saat halaman load, maka gunakan harga asli
+                            const originalId = tr.getAttribute('data-original-id');
+                            if (originalId && originalId === barangIdHidden.value) {
+                                const originalHarga = hargaDisplay.getAttribute('data-original-harga');
+                                harga = parseFloat(originalHarga) || 0;
+                            } else {
+                                // Jika mode masih default tapi usernya ubah barang, fallback ke harga normal
+                                harga = parseFloat(option.getAttribute('data-jual-potong')) || 0;
+                            }
+                        } else if (currentPriceMode === 'hpp') {
+                            harga = parseFloat(option.getAttribute('data-hpp')) || 0;
+                        } else if (currentPriceMode === 'jual_potong') {
+                            harga = parseFloat(option.getAttribute('data-jual-potong')) || 0;
+                        } else if (currentPriceMode === 'jual_lusin') {
+                            harga = parseFloat(option.getAttribute('data-jual-lusin')) || 0;
+                        } else if (currentPriceMode === 'grosir') {
+                            harga = parseFloat(option.getAttribute('data-grosir')) || 0;
+                        }
+
+                        const hargaBeli = parseFloat(option.getAttribute('data-beli-potong')) || 0;
+                        const jumlah = parseFloat(jumlahInput.value) || 0;
+                        const keuntungan = (harga - hargaBeli) * jumlah;
+                        tr.querySelector('.keuntungan-input').value = keuntungan;
+                    } else {
+                        barangIdHidden.value = "";
                     }
                     
                     const jumlah = parseFloat(jumlahInput.value) || 0;
                     const subtotal = harga * jumlah;
 
-                    // Hitung keuntungan: (Harga Terpilih - Harga Beli Potong) * Jumlah
-                    const hargaBeli = parseFloat(option.getAttribute('data-beli-potong')) || 0;
-                    const keuntungan = (harga - hargaBeli) * jumlah;
-
                     hargaDisplay.value = new Intl.NumberFormat('id-ID').format(harga);
                     subtotalDisplay.value = new Intl.NumberFormat('id-ID').format(subtotal);
                     subtotalInput.value = subtotal;
-                    tr.querySelector('.keuntungan-input').value = keuntungan;
 
                     calculateTotals();
+                    updateDatalistFilter(); // Update datalist setiap ada perubahan input
                 }
 
-                select.addEventListener('change', updateRow);
+                barangInput.addEventListener('input', updateRow);
                 jumlahInput.addEventListener('input', updateRow);
-                removeBtn.addEventListener('click', () => { tr.remove(); calculateTotals(); });
+                
+                removeBtn.addEventListener('click', () => { 
+                    tr.remove(); 
+                    calculateTotals(); 
+                    updateDatalistFilter(); // Update datalist saat row dihapus agar barangnya tersedia lagi
+                });
             }
 
             addRowBtn.addEventListener('click', addRow);
             bayarInput.addEventListener('input', calculateTotals);
 
-            // Init existing rows
+            // Init event untuk baris yang sudah terisi saat pertama kali Edit dibuka
             document.querySelectorAll('#detailsTable tbody tr').forEach(tr => initRowEvents(tr));
+            
+            // Panggil filter di awal agar barang yang sudah di dalam tabel langsung terfilter (hilang) dari opsi
+            updateDatalistFilter();
             calculateTotals();
         });
     </script>

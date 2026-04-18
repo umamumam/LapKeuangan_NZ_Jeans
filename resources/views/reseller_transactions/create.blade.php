@@ -2,14 +2,17 @@
     <div class="pc-container">
         <div class="pc-content">
             <div class="card shadow border-0" style="border-radius: 15px; overflow: hidden;">
-                <div class="card-header border-0 text-white d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
+                <div class="card-header border-0 text-white d-flex justify-content-between align-items-center"
+                    style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
                     <h5 class="mb-0 text-white"><i class="fas fa-plus-circle me-2"></i> Tambah Transaksi Reseller</h5>
-                    <div id="priceModeIndicator" class="badge bg-white text-primary py-2 px-3 shadow-sm d-none" style="font-size: 0.85rem; border-radius: 20px; border: 1px solid #4e73df;">
+                    <div id="priceModeIndicator" class="badge bg-white text-primary py-2 px-3 shadow-sm d-none"
+                        style="font-size: 0.85rem; border-radius: 20px; border: 1px solid #4e73df;">
                         <i class="fas fa-tag me-1"></i> Mode: <span id="priceModeText">Loading...</span>
                     </div>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('reseller_transactions.store') }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('reseller_transactions.store') }}" method="POST"
+                        enctype="multipart/form-data">
                         @csrf
 
                         @if($errors->any())
@@ -26,15 +29,18 @@
                             <div class="col-md-4">
                                 <label class="form-label">Reseller</label>
                                 <input type="hidden" name="reseller_id" id="resellerSelect" value="{{ $reseller->id }}">
-                                <input type="text" class="form-control bg-light text-muted" value="{{ $reseller->nama }}" readonly>
+                                <input type="text" class="form-control bg-light text-muted"
+                                    value="{{ $reseller->nama }}" readonly>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Tanggal Transaksi</label>
-                                <input type="date" name="tgl" class="form-control" value="{{ old('tgl', date('Y-m-d')) }}" required>
+                                <input type="date" name="tgl" class="form-control"
+                                    value="{{ old('tgl', date('Y-m-d')) }}" required>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Retur (Potong)</label>
-                                <input type="number" name="retur" class="form-control" value="{{ old('retur', 0) }}" min="0">
+                                <input type="number" name="retur" class="form-control" value="{{ old('retur', 0) }}"
+                                    min="0">
                                 <small class="text-muted">Isi jumlah potong barang yang diretur (opsional).</small>
                             </div>
                         </div>
@@ -62,7 +68,6 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <!-- Rows will be added here by JS -->
                                 </tbody>
                                 <tfoot>
                                     <tr>
@@ -73,7 +78,8 @@
                                         </td>
                                         <td class="text-end fw-bold align-middle border-start-0">Total Tagihan</td>
                                         <td colspan="2">
-                                            <input type="text" class="form-control fw-bold border-0 bg-transparent" id="total_uang_display" readonly value="Rp 0">
+                                            <input type="text" class="form-control fw-bold border-0 bg-transparent"
+                                                id="total_uang_display" readonly value="Rp 0">
                                         </td>
                                     </tr>
                                     <tr>
@@ -81,8 +87,10 @@
                                         <td class="text-end fw-bold align-middle">Bayar Nominal</td>
                                         <td colspan="2">
                                             <div class="input-group">
-                                                <input type="number" name="bayar" class="form-control fw-bold" id="bayar" value="{{ old('bayar', 0) }}" required min="0">
-                                                <button type="button" class="btn btn-secondary" id="btn-uang-pas" title="Uang Pas">Pas</button>
+                                                <input type="number" name="bayar" class="form-control fw-bold"
+                                                    id="bayar" value="{{ old('bayar', 0) }}" required min="0">
+                                                <button type="button" class="btn btn-secondary" id="btn-uang-pas"
+                                                    title="Uang Pas">Pas</button>
                                             </div>
                                         </td>
                                     </tr>
@@ -90,7 +98,8 @@
                                         <td colspan="2" class="border-end-0 border-top-0"></td>
                                         <td class="text-end fw-bold align-middle">Sisa / Kurang</td>
                                         <td colspan="2">
-                                            <input type="text" class="form-control fw-bold border-0 bg-transparent" id="sisa_kurang_display" readonly value="Rp 0">
+                                            <input type="text" class="form-control fw-bold border-0 bg-transparent"
+                                                id="sisa_kurang_display" readonly value="Rp 0">
                                         </td>
                                     </tr>
                                 </tfoot>
@@ -98,7 +107,8 @@
                         </div>
 
                         <div class="d-flex justify-content-end gap-2 mt-4">
-                            <a href="{{ route('reseller_transactions.show_reseller', $reseller->id) }}" class="btn btn-secondary">Batal</a>
+                            <a href="{{ route('reseller_transactions.show_reseller', $reseller->id) }}"
+                                class="btn btn-secondary">Batal</a>
                             <button type="submit" class="btn btn-primary">Simpan Transaksi</button>
                         </div>
                     </form>
@@ -107,28 +117,23 @@
         </div>
     </div>
 
-    <!-- Hidden elements for cloning -->
-    <div class="d-none" id="barangOptionsMaster">
-        <option value="">-- Pilih Barang --</option>
+    <datalist id="barang-list">
         @foreach($barangs as $barang)
-        <option value="{{ $barang->id }}" 
-            data-hpp="{{ $barang->hpp ?? 0 }}"
+        <option value="{{ $barang->namabarang }}{{ $barang->ukuran ? ' - ' . $barang->ukuran : '' }}"
+            data-id="{{ $barang->id }}" data-hpp="{{ $barang->hpp ?? 0 }}"
             data-jual-potong="{{ $barang->hargajual_perpotong ?? 0 }}"
-            data-jual-lusin="{{ $barang->hargajual_perlusin ?? 0 }}"
-            data-grosir="{{ $barang->harga_grosir ?? 0 }}"
-            data-beli-potong="{{ $barang->hargabeli_perpotong ?? 0 }}"
-            data-reseller-id="{{ $barang->reseller_id }}"
-            data-supplier-id="{{ $barang->supplier_id }}">{{ $barang->namabarang }} {{ $barang->ukuran ? ' - ' .
-            $barang->ukuran : '' }}</option>
+            data-jual-lusin="{{ $barang->hargajual_perlusin ?? 0 }}" data-grosir="{{ $barang->harga_grosir ?? 0 }}"
+            data-beli-potong="{{ $barang->hargabeli_perpotong ?? 0 }}" data-reseller-id="{{ $barang->reseller_id }}"
+            data-supplier-id="{{ $barang->supplier_id }}">
+        </option>
         @endforeach
-    </div>
+    </datalist>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const tableBody = document.querySelector('#detailsTable tbody');
             const addRowBtn = document.getElementById('addRowBtn');
             const resellerSelect = document.getElementById('resellerSelect');
-            const barangOptionsMaster = document.getElementById('barangOptionsMaster').querySelectorAll('option');
             
             const totalDisplay = document.getElementById('total_uang_display');
             const bayarInput = document.getElementById('bayar');
@@ -176,8 +181,8 @@
                         document.getElementById('hargaHeader').textContent = btn.textContent;
 
                         // Refresh any rows already added
-                        document.querySelectorAll('.barang-select').forEach(select => {
-                            select.dispatchEvent(new Event('change'));
+                        document.querySelectorAll('.barang-input').forEach(input => {
+                            input.dispatchEvent(new Event('input'));
                         });
                     });
                 });
@@ -188,21 +193,36 @@
                 return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
             }
 
-            function getFilteredOptions() {
+            // FUNGSI INI DIUBAH: Menangani filter reseller SEKALIGUS menyembunyikan barang yang sudah dipilih
+            function updateDatalistFilter() {
                 const selectedReseller = resellerSelect.value;
-                let optionsHtml = '';
-                barangOptionsMaster.forEach(opt => {
-                    const resellerId = opt.getAttribute('data-reseller-id');
-                    const supplierId = opt.getAttribute('data-supplier-id');
-                    
-                    // Kondisi umum: reseller_id null DAN supplier_id null
-                    // Kondisi khusus: reseller_id cocok
-                    if (opt.value === "" || resellerId === selectedReseller || (!resellerId && !supplierId)) {
-                        optionsHtml += opt.outerHTML;
+                const datalist = document.getElementById('barang-list');
+                const options = datalist.querySelectorAll('option');
+                
+                // Kumpulkan semua nama barang yang saat ini sudah diketik di semua input tabel
+                const usedItems = [];
+                document.querySelectorAll('.barang-input').forEach(input => {
+                    if (input.value.trim() !== "") {
+                        usedItems.push(input.value.trim());
                     }
                 });
-                return optionsHtml;
+                
+                options.forEach(opt => {
+                    const resellerId = opt.getAttribute('data-reseller-id');
+                    const supplierId = opt.getAttribute('data-supplier-id');
+                    const isUsed = usedItems.includes(opt.value);
+                    
+                    // Kondisi: Jika sesuai dengan reseller DAN belum dipakai di baris lain
+                    if ((resellerId === selectedReseller || (!resellerId && !supplierId)) && !isUsed) {
+                        opt.disabled = false;
+                    } else {
+                        opt.disabled = true; // Disabled di datalist akan otomatis menyembunyikan dari dropdown
+                    }
+                });
             }
+
+            resellerSelect.addEventListener('change', updateDatalistFilter);
+            updateDatalistFilter(); // Initial filter
 
             function calculateTotals() {
                 let total = 0;
@@ -239,13 +259,11 @@
             });
 
             function addRow() {
-                const optionsHtml = getFilteredOptions();
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>
-                        <select name="details[${rowIdx}][barang_id]" class="form-select barang-select" required>
-                            ${optionsHtml}
-                        </select>
+                        <input list="barang-list" class="form-control barang-input" placeholder="Cari atau ketik barang..." required>
+                        <input type="hidden" name="details[${rowIdx}][barang_id]" class="barang-id-hidden">
                     </td>
                     <td>
                         <div class="input-group">
@@ -271,7 +289,8 @@
                 tableBody.appendChild(tr);
                 rowIdx++;
 
-                const select = tr.querySelector('.barang-select');
+                const barangInput = tr.querySelector('.barang-input');
+                const barangIdHidden = tr.querySelector('.barang-id-hidden');
                 const hargaDisplay = tr.querySelector('.harga-display');
                 const jumlahInput = tr.querySelector('.jumlah-input');
                 const subtotalDisplay = tr.querySelector('.subtotal-display');
@@ -279,40 +298,54 @@
                 const removeBtn = tr.querySelector('.remove-row-btn');
 
                 function updateRow() {
-                    const option = select.options[select.selectedIndex];
-                    let harga = 0;
+                    const val = barangInput.value;
+                    const datalist = document.getElementById('barang-list');
+                    const option = Array.from(datalist.options).find(opt => opt.value === val);
                     
-                    if (currentPriceMode === 'hpp') {
-                        harga = parseFloat(option.getAttribute('data-hpp')) || 0;
-                    } else if (currentPriceMode === 'jual_potong') {
-                        harga = parseFloat(option.getAttribute('data-jual-potong')) || 0;
-                    } else if (currentPriceMode === 'jual_lusin') {
-                        harga = parseFloat(option.getAttribute('data-jual-lusin')) || 0;
-                    } else if (currentPriceMode === 'grosir') {
-                        harga = parseFloat(option.getAttribute('data-grosir')) || 0;
+                    let harga = 0;
+                    if (option) {
+                        barangIdHidden.value = option.getAttribute('data-id');
+                        
+                        if (currentPriceMode === 'hpp') {
+                            harga = parseFloat(option.getAttribute('data-hpp')) || 0;
+                        } else if (currentPriceMode === 'jual_potong') {
+                            harga = parseFloat(option.getAttribute('data-jual-potong')) || 0;
+                        } else if (currentPriceMode === 'jual_lusin') {
+                            harga = parseFloat(option.getAttribute('data-jual-lusin')) || 0;
+                        } else if (currentPriceMode === 'grosir') {
+                            harga = parseFloat(option.getAttribute('data-grosir')) || 0;
+                        }
+
+                        // Hitung keuntungan
+                        const hargaBeli = parseFloat(option.getAttribute('data-beli-potong')) || 0;
+                        const jumlah = parseFloat(jumlahInput.value) || 0;
+                        const keuntungan = (harga - hargaBeli) * jumlah;
+                        tr.querySelector('.keuntungan-input').value = keuntungan;
+                    } else {
+                        barangIdHidden.value = "";
                     }
                     
                     const jumlah = parseFloat(jumlahInput.value) || 0;
                     const subtotal = harga * jumlah;
 
-                    // Hitung keuntungan: (Harga Terpilih - Harga Beli Potong) * Jumlah
-                    const hargaBeli = parseFloat(option.getAttribute('data-beli-potong')) || 0;
-                    const keuntungan = (harga - hargaBeli) * jumlah;
-
                     hargaDisplay.value = new Intl.NumberFormat('id-ID').format(harga);
                     subtotalDisplay.value = new Intl.NumberFormat('id-ID').format(subtotal);
                     subtotalInput.value = subtotal;
-                    tr.querySelector('.keuntungan-input').value = keuntungan;
 
                     calculateTotals();
+                    
+                    // Panggil fungsi filter agar datalist terupdate (barang ini hilang dari opsi lain)
+                    updateDatalistFilter();
                 }
 
-                select.addEventListener('change', updateRow);
+                barangInput.addEventListener('input', updateRow);
                 jumlahInput.addEventListener('input', updateRow);
                 
                 removeBtn.addEventListener('click', function() {
                     tr.remove();
                     calculateTotals();
+                    // Panggil fungsi filter agar barang yang dihapus muncul lagi di opsi
+                    updateDatalistFilter(); 
                 });
             }
 
