@@ -184,6 +184,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('penarikan_omset', PenarikanOmsetController::class);
     Route::resource('karyawan', KaryawanController::class);
     Route::resource('gaji', PenggajianController::class);
+    Route::patch('/petty_cash/{pettyCash}/mark-as-lunas', [PettyCashController::class, 'markAsLunas'])->name('petty_cash.markAsLunas');
     Route::resource('petty_cash', PettyCashController::class);
 });
 
