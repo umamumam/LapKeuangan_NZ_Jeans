@@ -149,11 +149,24 @@
                                     </td>
                                     <td>{{ $item->kategori ?? '-' }}</td>
                                     <td>
-                                        <form action="{{ route('petty_cash.destroy', $item->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-link text-danger p-0" onclick="return confirm('Hapus data ini?')"><i class="ti ti-trash"></i></button>
-                                        </form>
+                                        <div class="d-flex justify-content-center gap-2">
+                                            @if($item->status != 'LUNAS' || $item->kurang_bayar > 0)
+                                            <form action="{{ route('petty_cash.markAsLunas', $item->id) }}" method="POST">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2" title="Lunasi">
+                                                    <i class="ti ti-check"></i> Lunasi
+                                                </button>
+                                            </form>
+                                            @endif
+                                            <form action="{{ route('petty_cash.destroy', $item->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" onclick="return confirm('Hapus data ini?')" title="Hapus">
+                                                    <i class="ti ti-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                                 @empty
@@ -163,10 +176,12 @@
                                 @endforelse
                             </tbody>
                             <tfoot class="table-light">
-                                <tr>
-                                    <th colspan="6" class="text-end pe-3 py-3">TOTAL PENGELUARAN BULAN INI</th>
-                                    <th class="text-end pe-3 text-primary fs-5 fw-bold text-nowrap">Rp {{ number_format($totalPengeluaran, 0, ',', '.') }}</th>
-                                    <th colspan="3"></th>
+                                <tr class="fw-bold">
+                                    <td colspan="6" class="text-end pe-3 py-3">TOTAL PENGELUARAN</td>
+                                    <td class="text-end pe-3 text-primary">Rp {{ number_format($totalPengeluaran, 0, ',', '.') }}</td>
+                                    <td class="text-end">SISA KURANG BAYAR:</td>
+                                    <td class="text-danger text-end pe-3">Rp {{ number_format($data->sum('kurang_bayar'), 0, ',', '.') }}</td>
+                                    <td></td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -184,9 +199,8 @@
                 let ball = parseInt($('#input_ball').val()) || 0;
                 let pack = parseInt($('#input_pack').val()) || 0;
                 
-                // Jika user isi ball ATAU pack, kita pakai qty tersebut
                 let qty = ball + pack; 
-                if (qty === 0) qty = 1; // Default min 1 jika barang diinput per unit tanpa ball/pack
+                if (qty === 0) qty = 1;
 
                 let total = harga * qty;
                 $('#input_jumlah').val(total);
@@ -194,6 +208,15 @@
 
             $('#input_harga, #input_ball, #input_pack').on('input', function() {
                 calculateAmount();
+            });
+
+            // Logika Otomatis Kurang Bayar 0 jika LUNAS
+            $('select[name="status"]').on('change', function() {
+                if ($(this).val() === 'LUNAS') {
+                    $('input[name="kurang_bayar"]').val(0).prop('readonly', true);
+                } else {
+                    $('input[name="kurang_bayar"]').prop('readonly', false);
+                }
             });
         });
     </script>

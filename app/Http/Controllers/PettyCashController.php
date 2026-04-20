@@ -53,4 +53,13 @@ class PettyCashController extends Controller
         $pettyCash->delete();
         return redirect()->back()->with('success', 'Data Petty Cash berhasil dihapus');
     }
+
+    public function markAsLunas(PettyCash $pettyCash)
+    {
+        $pettyCash->update([
+            'status' => 'LUNAS',
+            'kurang_bayar' => 0
+        ]);
+        return redirect()->back()->with('success', 'Data berhasil dilunasi');
+    }
 }
