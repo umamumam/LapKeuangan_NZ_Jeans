@@ -30,7 +30,14 @@ class PettyCashController extends Controller
             'harga_satuan' => 'required|numeric',
         ]);
 
-        PettyCash::create($request->all());
+        $data = $request->all();
+        // Pastikan nilai numerik tidak null agar tidak error SQL
+        $data['ball'] = $request->ball ?? 0;
+        $data['pack'] = $request->pack ?? 0;
+        $data['kurang_bayar'] = $request->kurang_bayar ?? 0;
+        $data['jumlah'] = $request->jumlah ?? 0;
+
+        PettyCash::create($data);
 
         return redirect()->back()->with('success', 'Data Petty Cash berhasil ditambahkan');
     }
