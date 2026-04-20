@@ -22,6 +22,9 @@ use App\Http\Controllers\BarangController;
 use App\Http\Controllers\ResellerTransactionController;
 use App\Http\Controllers\SupplierTransactionController;
 use App\Http\Controllers\PenarikanOmsetController;
+use App\Http\Controllers\KaryawanController;
+use App\Http\Controllers\PenggajianController;
+use App\Http\Controllers\PettyCashController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -179,6 +182,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/supplier-transactions/supplier/{supplier}', [SupplierTransactionController::class, 'supplierShow'])->name('supplier_transactions.show_supplier');
     Route::resource('supplier_transactions', SupplierTransactionController::class);
     Route::resource('penarikan_omset', PenarikanOmsetController::class);
+    Route::resource('karyawan', KaryawanController::class);
+    Route::resource('gaji', PenggajianController::class);
+    Route::resource('petty_cash', PettyCashController::class);
 });
 
 require __DIR__ . '/auth.php';

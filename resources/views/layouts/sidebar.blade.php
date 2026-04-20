@@ -188,6 +188,28 @@
                     </a>
                 </li>
                 <li class="pc-item pc-caption">
+                    <label style="color: red;">Penggajian Karyawan</label>
+                    <i class="ti ti-news"></i>
+                </li>
+                <li class="pc-item">
+                    <a href="/karyawan" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-report-analytics"></i></span>
+                        <span class="pc-mtext">Daftar Karyawan</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/gaji" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-qrcode"></i></span>
+                        <span class="pc-mtext">Daftar Gaji</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/petty_cash" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-wallet"></i></span>
+                        <span class="pc-mtext">Petty Cash NZ</span>
+                    </a>
+                </li>
+                <li class="pc-item pc-caption">
                     <label style="color: red;">Pengiriman Sampel</label>
                     <i class="ti ti-news"></i>
                 </li>
