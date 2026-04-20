@@ -6,24 +6,25 @@
                 <div class="col-lg-8">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body d-flex flex-column justify-content-center">
-                            <form action="{{ route('petty_cash.index') }}" method="GET" class="row g-3 align-items-end m-0">
+                            <form action="{{ route('petty_cash.index') }}" method="GET"
+                                class="row g-3 align-items-end m-0">
                                 <div class="col-md-4">
                                     <label class="form-label text-muted fw-bold mb-1">Bulan</label>
                                     <select name="bulan" class="form-select border-light-subtle shadow-none">
-                                        @for($m=1; $m<=12; $m++)
-                                            <option value="{{ sprintf('%02d', $m) }}" {{ $bulan == sprintf('%02d', $m) ? 'selected' : '' }}>
-                                                {{ date('F', mktime(0, 0, 0, $m, 1)) }}
+                                        @for($m=1; $m<=12; $m++) <option value="{{ sprintf('%02d', $m) }}" {{
+                                            $bulan==sprintf('%02d', $m) ? 'selected' : '' }}>
+                                            {{ date('F', mktime(0, 0, 0, $m, 1)) }}
                                             </option>
-                                        @endfor
+                                            @endfor
                                     </select>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label text-muted fw-bold mb-1">Tahun</label>
                                     <select name="tahun" class="form-select border-light-subtle shadow-none">
                                         @php $currentYear = date('Y'); @endphp
-                                        @for($y=$currentYear-2; $y<=$currentYear+1; $y++)
-                                            <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>{{ $y }}</option>
-                                        @endfor
+                                        @for($y=$currentYear-2; $y<=$currentYear+1; $y++) <option value="{{ $y }}" {{
+                                            $tahun==$y ? 'selected' : '' }}>{{ $y }}</option>
+                                            @endfor
                                     </select>
                                 </div>
                                 <div class="col-md-4">
@@ -40,7 +41,8 @@
                         <div class="card-body d-flex flex-column justify-content-center align-items-end text-end">
                             <p class="mb-1 text-white-50 fw-semibold">Total Pengeluaran Petty Cash</p>
                             <h3 class="mb-0 fw-bold text-white d-flex align-items-center">
-                                <span class="fs-5 me-1">Rp</span> <span>{{ number_format($totalPengeluaran, 0, ',', '.') }}</span>
+                                <span class="fs-5 me-1">Rp</span> <span>{{ number_format($totalPengeluaran, 0, ',', '.')
+                                    }}</span>
                             </h3>
                         </div>
                     </div>
@@ -51,13 +53,15 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-bottom py-3">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0 fw-bold"><i class="ti ti-wallet text-primary me-2"></i> PETTY CASH NZ FASHION: {{ date('F', mktime(0, 0, 0, $bulan, 1)) }} {{ $tahun }}</h5>
-                        <button class="btn btn-success btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAdd">
+                        <h5 class="mb-0 fw-bold"><i class="ti ti-wallet text-primary me-2"></i> PETTY CASH NZ FASHION:
+                            {{ date('F', mktime(0, 0, 0, $bulan, 1)) }} {{ $tahun }}</h5>
+                        <button class="btn btn-success btn-sm" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapseAdd">
                             <i class="ti ti-plus"></i> Tambah Data
                         </button>
                     </div>
                 </div>
-                
+
                 <div class="collapse" id="collapseAdd">
                     <div class="card-body border-bottom bg-light">
                         <form action="{{ route('petty_cash.store') }}" method="POST" id="formPettyCash">
@@ -65,31 +69,38 @@
                             <div class="row g-3">
                                 <div class="col-md-2">
                                     <label class="form-label small fw-bold">Tanggal</label>
-                                    <input type="date" name="tanggal" class="form-control form-control-sm" required value="{{ date('Y-m-d') }}">
+                                    <input type="date" name="tanggal" class="form-control form-control-sm" required
+                                        value="{{ date('Y-m-d') }}">
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label small fw-bold">Jenis Barang</label>
-                                    <input type="text" name="jenis_barang" class="form-control form-control-sm" placeholder="Nama Barang" required>
+                                    <input type="text" name="jenis_barang" class="form-control form-control-sm"
+                                        placeholder="Nama Barang" required>
                                 </div>
                                 <div class="col-md-1">
                                     <label class="form-label small fw-bold">Ukuran</label>
-                                    <input type="text" name="ukuran" class="form-control form-control-sm" placeholder="-">
+                                    <input type="text" name="ukuran" class="form-control form-control-sm"
+                                        placeholder="-">
                                 </div>
                                 <div class="col-md-2">
                                     <label class="form-label small fw-bold">Harga Satuan</label>
-                                    <input type="number" name="harga_satuan" id="input_harga" class="form-control form-control-sm" placeholder="0" required>
+                                    <input type="number" name="harga_satuan" id="input_harga"
+                                        class="form-control form-control-sm" placeholder="0" required>
                                 </div>
                                 <div class="col-md-1">
                                     <label class="form-label small fw-bold">Ball</label>
-                                    <input type="number" name="ball" id="input_ball" class="form-control form-control-sm" value="0">
+                                    <input type="number" name="ball" id="input_ball"
+                                        class="form-control form-control-sm" value="0">
                                 </div>
                                 <div class="col-md-1">
                                     <label class="form-label small fw-bold">Pack</label>
-                                    <input type="number" name="pack" id="input_pack" class="form-control form-control-sm" value="0">
+                                    <input type="number" name="pack" id="input_pack"
+                                        class="form-control form-control-sm" value="0">
                                 </div>
                                 <div class="col-md-2">
                                     <label class="form-label small fw-bold text-primary">Jumlah (Auto)</label>
-                                    <input type="number" name="jumlah" id="input_jumlah" class="form-control form-control-sm bg-white fw-bold text-primary" readonly>
+                                    <input type="number" name="jumlah" id="input_jumlah"
+                                        class="form-control form-control-sm bg-white fw-bold text-primary" readonly>
                                 </div>
                                 <div class="col-md-2">
                                     <label class="form-label small fw-bold">Status</label>
@@ -100,12 +111,14 @@
                                     </select>
                                 </div>
                                 <div class="col-md-2">
-                                    <label class="form-label small fw-bold">Kurang Bayar</label>
-                                    <input type="number" name="kurang_bayar" class="form-control form-control-sm" value="0">
+                                    <label class="form-label small fw-bold">Kurang / Bayar</label>
+                                    <input type="number" name="kurang_bayar" class="form-control form-control-sm"
+                                        value="0">
                                 </div>
                                 <div class="col-md-2">
                                     <label class="form-label small fw-bold">Kategori/Ket</label>
-                                    <input type="text" name="kategori" class="form-control form-control-sm" placeholder="Atk/Iklan/Dsb">
+                                    <input type="text" name="kategori" class="form-control form-control-sm"
+                                        placeholder="Atk/Iklan/Dsb">
                                 </div>
                                 <div class="col-md-2 align-self-end text-end">
                                     <button type="submit" class="btn btn-primary btn-sm w-100">Simpan Data</button>
@@ -143,7 +156,8 @@
                                     <td>{{ $item->pack }}</td>
                                     <td class="text-end fw-bold">{{ number_format($item->jumlah, 0, ',', '.') }}</td>
                                     <td>
-                                        <span class="badge {{ $item->status == 'LUNAS' ? 'bg-light-success text-success' : 'bg-light-warning text-warning' }}">
+                                        <span
+                                            class="badge {{ $item->status == 'LUNAS' ? 'bg-light-success text-success' : 'bg-light-warning text-warning' }}">
                                             {{ $item->status }}
                                         </span>
                                     </td>
@@ -151,18 +165,22 @@
                                     <td>
                                         <div class="d-flex justify-content-center gap-2">
                                             @if($item->status != 'LUNAS' || $item->kurang_bayar > 0)
-                                            <form action="{{ route('petty_cash.markAsLunas', $item->id) }}" method="POST">
+                                            <form action="{{ route('petty_cash.markAsLunas', $item->id) }}"
+                                                method="POST">
                                                 @csrf
                                                 @method('PATCH')
-                                                <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2" title="Lunasi">
+                                                <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2"
+                                                    title="Lunasi">
                                                     <i class="ti ti-check"></i> Lunasi
                                                 </button>
                                             </form>
                                             @endif
-                                            <form action="{{ route('petty_cash.destroy', $item->id) }}" method="POST" class="d-inline">
+                                            <form action="{{ route('petty_cash.destroy', $item->id) }}" method="POST"
+                                                class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" onclick="return confirm('Hapus data ini?')" title="Hapus">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2"
+                                                    onclick="return confirm('Hapus data ini?')" title="Hapus">
                                                     <i class="ti ti-trash"></i>
                                                 </button>
                                             </form>
@@ -171,16 +189,19 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="10" class="py-4 text-muted">Belum ada data petty cash untuk bulan ini.</td>
+                                    <td colspan="10" class="py-4 text-muted">Belum ada data petty cash untuk bulan ini.
+                                    </td>
                                 </tr>
                                 @endforelse
                             </tbody>
                             <tfoot class="table-light">
                                 <tr class="fw-bold">
                                     <td colspan="6" class="text-end pe-3 py-3">TOTAL PENGELUARAN</td>
-                                    <td class="text-end pe-3 text-primary">Rp {{ number_format($totalPengeluaran, 0, ',', '.') }}</td>
+                                    <td class="text-end pe-3 text-primary">Rp {{ number_format($totalPengeluaran, 0,
+                                        ',', '.') }}</td>
                                     <td class="text-end">SISA KURANG BAYAR:</td>
-                                    <td class="text-danger text-end pe-3">Rp {{ number_format($data->sum('kurang_bayar'), 0, ',', '.') }}</td>
+                                    <td class="text-danger text-end pe-3">Rp {{
+                                        number_format($data->sum('kurang_bayar'), 0, ',', '.') }}</td>
                                     <td></td>
                                 </tr>
                             </tfoot>
@@ -220,7 +241,7 @@
             });
         });
     </script>
-    
+
     @if(session('success'))
     <script>
         Swal.fire({
