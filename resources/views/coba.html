@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lidya Fashion | The Art of Tailoring</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+    rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { 'cream': '#FAF9F6', 'charcoal': '#2C2C2C', 'gold': '#C5A059' },
+          fontFamily: { 'serif': ['"Playfair Display"', 'serif'], 'sans': ['Lato', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .cart-drawer {
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .cart-open {
+      transform: translateX(0);
+    }
+
+    .cart-closed {
+      transform: translateX(100%);
+    }
+
+    .fade-in {
+      animation: fadeIn 0.8s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .glass {
+      background: rgba(250, 249, 246, 0.8);
+      backdrop-filter: blur(12px);
+    }
+  </style>
+</head>
+
+<body class="bg-cream text-charcoal font-sans antialiased overflow-x-hidden">
+
+  <nav id="navbar"
+    class="fixed w-full z-40 transition-all duration-300 py-6 px-6 md:px-12 flex justify-between align-items-center glass border-b border-gray-100">
+    <a href="#" class="font-serif text-2xl font-bold tracking-widest uppercase">Lidya Fashion</a>
+    <div class="flex space-x-6 items-center">
+      <button onclick="toggleCart()" class="relative hover:text-gold transition">
+        <i class="fas fa-shopping-bag text-xl"></i>
+        <span id="cart-count"
+          class="absolute -top-2 -right-2 bg-charcoal text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center">0</span>
+      </button>
+      <button class="md:hidden"><i class="fas fa-bars text-xl"></i></button>
+    </div>
+  </nav>
+
+  <header class="relative h-[70vh] flex items-center justify-center overflow-hidden pt-20">
+    <div class="absolute inset-0 z-0">
+      <img src="https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=1887&auto=format&fit=crop"
+        class="w-full h-full object-cover opacity-80" alt="Denim Detail">
+      <div class="absolute inset-0 bg-gradient-to-b from-transparent to-cream"></div>
+    </div>
+    <div class="relative z-10 text-center px-4 fade-in">
+      <span class="text-gold uppercase tracking-[0.4em] text-xs font-bold mb-4 block">Edisi Celana Pria & Wanita</span>
+      <h1 class="font-serif text-5xl md:text-7xl mb-6">Struktur <span class="italic font-light">&</span> Kenyamanan</h1>
+      <p class="max-w-xl mx-auto text-gray-600 font-light italic">"Keseimbangan antara siluet klasik dan fleksibilitas
+        modern."</p>
+    </div>
+  </header>
+
+  <section class="py-20 px-6 md:px-12 max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
+
+      <div class="group">
+        <div class="relative overflow-hidden aspect-[3/4] mb-6 bg-gray-200">
+          <img src="https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=1926&auto=format&fit=crop"
+            class="w-full h-full object-cover grayscale hover:grayscale-0 transition duration-700 transform group-hover:scale-105">
+          <div
+            class="absolute inset-0 flex items-end p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+            <button
+              onclick="addToCart(1, 'Raw Indigo Denim', 850000, 'https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=1926')"
+              class="w-full bg-charcoal text-cream py-3 text-xs uppercase tracking-widest hover:bg-gold transition">Tambah
+              ke Keranjang</button>
+          </div>
+        </div>
+        <h3 class="font-serif text-xl">Raw Indigo Denim</h3>
+        <p class="text-gray-500 text-sm italic mb-2">Selvedge 14oz</p>
+        <p class="font-bold">Rp 850.000</p>
+      </div>
+
+      <div class="group">
+        <div class="relative overflow-hidden aspect-[3/4] mb-6 bg-gray-200">
+          <img src="https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?q=80&w=1887&auto=format&fit=crop"
+            class="w-full h-full object-cover grayscale hover:grayscale-0 transition duration-700 transform group-hover:scale-105">
+          <div
+            class="absolute inset-0 flex items-end p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+            <button
+              onclick="addToCart(2, 'Classic Khaki Chinos', 520000, 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?q=80&w=1887')"
+              class="w-full bg-charcoal text-cream py-3 text-xs uppercase tracking-widest hover:bg-gold transition">Tambah
+              ke Keranjang</button>
+          </div>
+        </div>
+        <h3 class="font-serif text-xl">Classic Khaki Chinos</h3>
+        <p class="text-gray-500 text-sm italic mb-2">Slim Fit Cotton</p>
+        <p class="font-bold">Rp 520.000</p>
+      </div>
+
+      <div class="group">
+        <div class="relative overflow-hidden aspect-[3/4] mb-6 bg-gray-200">
+          <img src="https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=1830&auto=format&fit=crop"
+            class="w-full h-full object-cover grayscale hover:grayscale-0 transition duration-700 transform group-hover:scale-105">
+          <div
+            class="absolute inset-0 flex items-end p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+            <button
+              onclick="addToCart(3, 'Noir Cargo Pants', 675000, 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=1830')"
+              class="w-full bg-charcoal text-cream py-3 text-xs uppercase tracking-widest hover:bg-gold transition">Tambah
+              ke Keranjang</button>
+          </div>
+        </div>
+        <h3 class="font-serif text-xl">Noir Cargo Pants</h3>
+        <p class="text-gray-500 text-sm italic mb-2">Utility Series</p>
+        <p class="font-bold">Rp 675.000</p>
+      </div>
+
+    </div>
+  </section>
+
+  <div id="cart-overlay" onclick="toggleCart()" class="fixed inset-0 bg-black/40 z-50 hidden transition-opacity"></div>
+  <div id="cart-drawer"
+    class="fixed right-0 top-0 h-full w-full md:w-[450px] bg-white z-[60] cart-drawer cart-closed shadow-2xl flex flex-col">
+    <div class="p-6 border-b flex justify-between items-center bg-cream">
+      <h2 class="font-serif text-2xl uppercase tracking-widest">Tas Belanja</h2>
+      <button onclick="toggleCart()" class="text-xl"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div id="cart-items" class="flex-grow overflow-y-auto p-6 space-y-6">
+      <p class="text-center text-gray-400 italic py-10">Keranjang Anda masih kosong...</p>
+    </div>
+
+    <div class="p-6 border-t bg-cream">
+      <div class="flex justify-between mb-4 font-serif text-xl">
+        <span>Subtotal</span>
+        <span id="cart-total">Rp 0</span>
+      </div>
+      <button onclick="openCheckout()"
+        class="w-full bg-charcoal text-cream py-4 uppercase tracking-widest text-sm hover:bg-gold transition">
+        Lanjut ke Pembayaran
+      </button>
+    </div>
+  </div>
+
+  <div id="checkout-modal" class="fixed inset-0 z-[70] hidden items-center justify-center p-4 bg-charcoal/90">
+    <div
+      class="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-none shadow-2xl flex flex-col md:flex-row">
+      <div class="p-8 flex-grow">
+        <h2 class="font-serif text-3xl mb-8">Informasi Pengiriman</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <input type="text" placeholder="Nama Lengkap"
+            class="border-b border-gray-300 py-2 outline-none focus:border-gold">
+          <input type="email" placeholder="Email" class="border-b border-gray-300 py-2 outline-none focus:border-gold">
+          <input type="text" placeholder="Alamat Lengkap"
+            class="md:col-span-2 border-b border-gray-300 py-2 outline-none focus:border-gold">
+          <select class="border-b border-gray-300 py-2 outline-none focus:border-gold">
+            <option>Pilih Kurir (Biteship API)</option>
+            <option>J&T Reguler - Rp 15.000</option>
+            <option>SiCepat Best - Rp 22.000</option>
+          </select>
+        </div>
+        <h2 class="font-serif text-3xl mb-8 mt-12">Metode Pembayaran</h2>
+        <div class="flex space-x-4 mb-8">
+          <button class="flex-1 border p-4 hover:border-gold transition flex flex-col items-center">
+            <i class="fas fa-university mb-2"></i> <span class="text-xs uppercase">Transfer VA</span>
+          </button>
+          <button class="flex-1 border p-4 hover:border-gold transition flex flex-col items-center">
+            <i class="fas fa-qrcode mb-2"></i> <span class="text-xs uppercase">QRIS / Dana</span>
+          </button>
+        </div>
+        <button onclick="confirmPayment()" class="w-full bg-gold text-white py-4 uppercase tracking-widest">Konfirmasi &
+          Bayar</button>
+      </div>
+      <div class="bg-cream p-8 w-full md:w-[350px] border-l">
+        <h3 class="font-serif text-xl mb-6">Ringkasan Pesanan</h3>
+        <div id="checkout-summary" class="space-y-4 mb-6">
+        </div>
+        <div class="border-t pt-4 font-bold flex justify-between">
+          <span>Total</span>
+          <span id="final-total">Rp 0</span>
+        </div>
+      </div>
+      <button onclick="closeCheckout()" class="absolute top-4 right-4 text-white text-2xl md:text-charcoal"><i
+          class="fas fa-times"></i></button>
+    </div>
+  </div>
+
+  <div id="success-screen" class="fixed inset-0 z-[100] hidden items-center justify-center bg-cream text-center p-6">
+    <div class="fade-in">
+      <i class="far fa-check-circle text-8xl text-gold mb-6"></i>
+      <h2 class="font-serif text-4xl mb-4">Terima Kasih Atas Pesanan Anda</h2>
+      <p class="text-gray-500 mb-8 max-w-md mx-auto">Kami sedang menyiapkan mahakarya Anda. Nomor resi akan segera
+        dikirim melalui email.</p>
+      <button onclick="location.reload()"
+        class="border border-charcoal px-10 py-3 uppercase tracking-widest text-xs hover:bg-charcoal hover:text-white transition">Kembali
+        Berbelanja</button>
+    </div>
+  </div>
+
+  <script>
+    let cart = [];
+
+    function toggleCart() {
+      const drawer = document.getElementById('cart-drawer');
+      const overlay = document.getElementById('cart-overlay');
+      drawer.classList.toggle('cart-open');
+      drawer.classList.toggle('cart-closed');
+      overlay.classList.toggle('hidden');
+    }
+
+    function addToCart(id, name, price, img) {
+      const existing = cart.find(i => i.id === id);
+      if (existing) {
+        existing.qty++;
+      } else {
+        cart.push({ id, name, price, img, qty: 1 });
+      }
+      updateCartUI();
+
+      // Notification toast simple
+      if (!document.querySelector('.cart-open')) toggleCart();
+    }
+
+    function updateCartUI() {
+      const container = document.getElementById('cart-items');
+      const countBadge = document.getElementById('cart-count');
+      const totalLabel = document.getElementById('cart-total');
+
+      if (cart.length === 0) {
+        container.innerHTML = `<p class="text-center text-gray-400 italic py-10">Keranjang Anda masih kosong...</p>`;
+        countBadge.innerText = 0;
+        totalLabel.innerText = "Rp 0";
+        return;
+      }
+
+      container.innerHTML = cart.map(item => `
+                <div class="flex items-center space-x-4">
+                    <img src="${item.img}" class="w-20 h-24 object-cover border">
+                    <div class="flex-grow">
+                        <h4 class="font-serif">${item.name}</h4>
+                        <p class="text-xs text-gray-500">${item.qty} x Rp ${item.price.toLocaleString('id-ID')}</p>
+                    </div>
+                    <button onclick="removeFromCart(${item.id})" class="text-gray-300 hover:text-red-500"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            `).join('');
+
+      const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      totalLabel.innerText = `Rp ${total.toLocaleString('id-ID')}`;
+      countBadge.innerText = cart.reduce((sum, i) => sum + i.qty, 0);
+    }
+
+    function removeFromCart(id) {
+      cart = cart.filter(i => i.id !== id);
+      updateCartUI();
+    }
+
+    function openCheckout() {
+      if (cart.length === 0) return alert('Keranjang kosong!');
+      toggleCart();
+      document.getElementById('checkout-modal').classList.replace('hidden', 'flex');
+
+      const summary = document.getElementById('checkout-summary');
+      summary.innerHTML = cart.map(item => `
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">${item.name} (x${item.qty})</span>
+                    <span>Rp ${(item.price * item.qty).toLocaleString('id-ID')}</span>
+                </div>
+            `).join('');
+
+      const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      document.getElementById('final-total').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+    }
+
+    function closeCheckout() {
+      document.getElementById('checkout-modal').classList.replace('flex', 'hidden');
+    }
+
+    function confirmPayment() {
+      document.getElementById('checkout-modal').classList.replace('flex', 'hidden');
+      document.getElementById('success-screen').classList.replace('hidden', 'flex');
+    }
+
+    // Navbar Scroll effect
+    window.addEventListener('scroll', () => {
+      const nav = document.getElementById('navbar');
+      if (window.scrollY > 50) nav.classList.add('py-4');
+      else nav.classList.remove('py-4');
+    });
+  </script>
+</body>
+
+</html>

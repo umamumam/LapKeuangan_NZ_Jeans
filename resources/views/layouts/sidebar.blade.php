@@ -77,7 +77,12 @@
                         <span class="pc-mtext">Rekap Hasil</span>
                     </a>
                 </li>
-
+                <li class="pc-item {{ Request::is('penarikan_omset*') ? 'active' : '' }}">
+                    <a href="{{ route('penarikan_omset.index') }}" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-cash"></i></span>
+                        <span class="pc-mtext">Penarikan Omset</span>
+                    </a>
+                </li>
                 {{-- <li class="pc-item pc-hasmenu">
                     <a href="#!" class="pc-link"><span class="pc-micon"><i class="ti ti-chart-bar"></i>
                         </span><span class="pc-mtext">Hasil</span><span class="pc-arrow"><i

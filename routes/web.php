@@ -21,6 +21,7 @@ use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\ResellerTransactionController;
 use App\Http\Controllers\SupplierTransactionController;
+use App\Http\Controllers\PenarikanOmsetController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -177,6 +178,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/supplier-transactions/supplier/{supplier}/pay-debt', [SupplierTransactionController::class, 'payDebt'])->name('supplier_transactions.pay_debt');
     Route::get('/supplier-transactions/supplier/{supplier}', [SupplierTransactionController::class, 'supplierShow'])->name('supplier_transactions.show_supplier');
     Route::resource('supplier_transactions', SupplierTransactionController::class);
+    Route::resource('penarikan_omset', PenarikanOmsetController::class);
 });
 
 require __DIR__ . '/auth.php';

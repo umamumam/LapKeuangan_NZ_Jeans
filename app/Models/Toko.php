@@ -50,4 +50,8 @@ class Toko extends Model
             ->where('tanggal_mulai', '<=', $today)
             ->where('tanggal_selesai', '>=', $today);
     }
+    public function penarikanOmsets()
+    {
+        return $this->hasMany(PenarikanOmset::class);
+    }
 }
