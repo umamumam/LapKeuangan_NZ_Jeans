@@ -186,6 +186,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('gaji', PenggajianController::class);
     Route::patch('/petty_cash/{pettyCash}/mark-as-lunas', [PettyCashController::class, 'markAsLunas'])->name('petty_cash.markAsLunas');
     Route::resource('petty_cash', PettyCashController::class);
+    
+    Route::get('/reports/reseller', [\App\Http\Controllers\PartnerReportController::class, 'reseller'])->name('reports.reseller');
+    Route::get('/reports/supplier', [\App\Http\Controllers\PartnerReportController::class, 'supplier'])->name('reports.supplier');
 });
 
 require __DIR__ . '/auth.php';

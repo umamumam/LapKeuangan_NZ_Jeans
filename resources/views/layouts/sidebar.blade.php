@@ -187,6 +187,18 @@
                         <span class="pc-mtext">Transaksi Supplier</span>
                     </a>
                 </li>
+                <li class="pc-item {{ Request::is('reports/reseller*') ? 'active' : '' }}">
+                    <a href="{{ route('reports.reseller') }}" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-chart-bar"></i></span>
+                        <span class="pc-mtext">Rekap Reseller</span>
+                    </a>
+                </li>
+                <li class="pc-item {{ Request::is('reports/supplier*') ? 'active' : '' }}">
+                    <a href="{{ route('reports.supplier') }}" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-chart-bar"></i></span>
+                        <span class="pc-mtext">Rekap Supplier</span>
+                    </a>
+                </li>
                 <li class="pc-item pc-caption">
                     <label style="color: red;">Penggajian Karyawan</label>
                     <i class="ti ti-news"></i>

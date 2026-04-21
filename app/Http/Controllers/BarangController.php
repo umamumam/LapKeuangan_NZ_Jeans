@@ -27,17 +27,23 @@ class BarangController extends Controller
             'supplier_id' => 'nullable|exists:suppliers,id',
             'namabarang' => 'required|string|max:255',
             'ukuran' => 'nullable|string|max:50',
-            'hpp' => 'nullable|integer',
-            'hargabeli_perpotong' => 'nullable|integer',
-            'hargabeli_perlusin' => 'nullable|integer',
-            'hargajual_perpotong' => 'nullable|integer',
-            'hargajual_perlusin' => 'nullable|integer',
-            'harga_grosir' => 'nullable|integer',
-            'keuntungan' => 'nullable|integer',
+            'hpp' => 'nullable|numeric',
+            'hargabeli_perpotong' => 'nullable|numeric',
+            'hargabeli_perlusin' => 'nullable|numeric',
+            'hargajual_perpotong' => 'nullable|numeric',
+            'hargajual_perlusin' => 'nullable|numeric',
+            'harga_grosir' => 'nullable|numeric',
+            'keuntungan' => 'nullable|numeric',
         ]);
 
         try {
-            Barang::create($request->all());
+            $data = $request->all();
+            foreach (['hpp', 'hargabeli_perpotong', 'hargabeli_perlusin', 'hargajual_perpotong', 'hargajual_perlusin', 'harga_grosir', 'keuntungan'] as $field) {
+                if (isset($data[$field])) {
+                    $data[$field] = round($data[$field]);
+                }
+            }
+            Barang::create($data);
             return redirect()->back()->with('success', 'Barang berhasil ditambahkan!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal menambahkan barang: ' . $e->getMessage())->withInput();
@@ -51,17 +57,23 @@ class BarangController extends Controller
             'supplier_id' => 'nullable|exists:suppliers,id',
             'namabarang' => 'required|string|max:255',
             'ukuran' => 'nullable|string|max:50',
-            'hpp' => 'nullable|integer',
-            'hargabeli_perpotong' => 'nullable|integer',
-            'hargabeli_perlusin' => 'nullable|integer',
-            'hargajual_perpotong' => 'nullable|integer',
-            'hargajual_perlusin' => 'nullable|integer',
-            'harga_grosir' => 'nullable|integer',
-            'keuntungan' => 'nullable|integer',
+            'hpp' => 'nullable|numeric',
+            'hargabeli_perpotong' => 'nullable|numeric',
+            'hargabeli_perlusin' => 'nullable|numeric',
+            'hargajual_perpotong' => 'nullable|numeric',
+            'hargajual_perlusin' => 'nullable|numeric',
+            'harga_grosir' => 'nullable|numeric',
+            'keuntungan' => 'nullable|numeric',
         ]);
 
         try {
-            $barang->update($request->all());
+            $data = $request->all();
+            foreach (['hpp', 'hargabeli_perpotong', 'hargabeli_perlusin', 'hargajual_perpotong', 'hargajual_perlusin', 'harga_grosir', 'keuntungan'] as $field) {
+                if (isset($data[$field])) {
+                    $data[$field] = round($data[$field]);
+                }
+            }
+            $barang->update($data);
             return redirect()->back()->with('success', 'Barang berhasil diperbarui!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal memperbarui barang: ' . $e->getMessage())->withInput();

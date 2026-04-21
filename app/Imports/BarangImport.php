@@ -84,7 +84,31 @@ class BarangImport implements ToModel, WithHeadingRow, WithCalculatedFormulas
             return 0;
         }
 
-        $numeric = preg_replace('/[^0-9-]/', '', $value);
-        return $numeric === '' ? 0 : (int)$numeric;
+        // Jika value adalah string (Misal: "59.166,67" atau "59,166.67")
+        if (is_string($value)) {
+            // Hilangkan pemisah ribuan (titik jika ada koma desimal, atau sebaliknya)
+            // Kasus umum Indonesia: 1.000,00 -> Titik dibuang, koma jadi titik
+            if (strpos($value, ',') !== false && strpos($value, '.') !== false) {
+                if (strpos($value, '.') < strpos($value, ',')) {
+                    // Format Indonesia: 1.000,00
+                    $value = str_replace('.', '', $value);
+                    $value = str_replace(',', '.', $value);
+                } else {
+                    // Format US: 1,000.00
+                    $value = str_replace(',', '', $value);
+                }
+            } elseif (strpos($value, ',') !== false) {
+                // Jika hanya ada koma, asumsikan itu desimal jika tidak diikuti 3 angka (ini agak tricky)
+                // Tapi paling aman untuk Excel: biasanya dikirim sebagai float jika tipe selnya angka
+                // Jika string "59166,67", kita ubah jadi "59166.67"
+                $value = str_replace(',', '.', $value);
+            }
+        }
+
+        // Ambil hanya angka, titik desimal, dan tanda minus
+        $numeric = preg_replace('/[^0-9.-]/', '', (string)$value);
+        
+        // Kembalikan sebagai integer yang dibulatkan
+        return $numeric === '' ? 0 : (int)round((float)$numeric);
     }
 }
