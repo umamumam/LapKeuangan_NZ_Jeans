@@ -17,11 +17,13 @@ class ResellerController extends Controller
     {
         $request->validate([
             'nama' => 'required|string|max:100|unique:resellers,nama',
+            'telepon' => 'nullable|string|max:20',
             'hutang_awal' => 'nullable|numeric|min:0',
         ]);
 
         Reseller::create([
             'nama' => $request->nama,
+            'telepon' => $request->telepon,
             'hutang_awal' => $request->hutang_awal ?? 0,
         ]);
 
@@ -32,11 +34,13 @@ class ResellerController extends Controller
     {
         $request->validate([
             'nama' => 'required|string|max:100|unique:resellers,nama,' . $reseller->id,
+            'telepon' => 'nullable|string|max:20',
             'hutang_awal' => 'nullable|numeric|min:0',
         ]);
 
         $reseller->update([
             'nama' => $request->nama,
+            'telepon' => $request->telepon,
             'hutang_awal' => $request->hutang_awal ?? 0,
         ]);
 

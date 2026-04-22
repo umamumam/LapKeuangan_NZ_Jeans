@@ -102,64 +102,6 @@
                     </ul>
                 </li> --}}
                 <li class="pc-item pc-caption">
-                    <label style="color: red;">Pengembalian / Pembatalan</label>
-                    <i class="ti ti-news"></i>
-                </li>
-                <li class="pc-item">
-                    <a href="/bandings" class="pc-link">
-                        <span class="pc-micon"><i class="ti ti-report-analytics"></i></span>
-                        <span class="pc-mtext">Daftar Banding</span>
-                    </a>
-                </li>
-                <li class="pc-item">
-                    <a href="/bandings/search" class="pc-link">
-                        <span class="pc-micon"><i class="ti ti-qrcode"></i></span>
-                        <span class="pc-mtext">Scan Resi</span>
-                    </a>
-                </li>
-                {{-- <li class="pc-item">
-                    <a href="/bandings/search-ok" class="pc-link">
-                        <span class="pc-micon"><i class="ti ti-barcode"></i></span>
-                        <span class="pc-mtext">Scan Resi V2</span>
-                    </a>
-                </li> --}}
-                <li class="pc-item">
-                    <a href="/scan-ok" class="pc-link">
-                        <span class="pc-micon"><i class="ti ti-barcode"></i></span>
-                        <span class="pc-mtext">Scan Resi V2</span>
-                    </a>
-                </li>
-                {{-- <li class="pc-item">
-                    <a href="/ok" class="pc-link">
-                        <span class="pc-micon"><i class="ti ti-circle-check"></i></span>
-                        <span class="pc-mtext">Daftar Status Diterima OK</span>
-                    </a>
-                </li>
-                <li class="pc-item">
-                    <a href="/belum" class="pc-link">
-                        <span class="pc-micon"><i class="ti ti-circle-x"></i></span>
-                        <span class="pc-mtext">Status Belum Diterima</span>
-                    </a>
-                </li> --}}
-                <li class="pc-item">
-                    <a href="/data-ok" class="pc-link">
-                        <span class="pc-micon"><i class="ti ti-circle-check"></i></span>
-                        <span class="pc-mtext">Daftar Status Diterima OK</span>
-                    </a>
-                </li>
-                <li class="pc-item">
-                    <a href="/data-belum" class="pc-link">
-                        <span class="pc-micon"><i class="ti ti-circle-x"></i></span>
-                        <span class="pc-mtext">Status Belum Diterima</span>
-                    </a>
-                </li>
-                <li class="pc-item">
-                    <a href="/pengembalian-penukaran" class="pc-link">
-                        <span class="pc-micon"><i class="ti ti-refresh"></i></span>
-                        <span class="pc-mtext">Pengembalian_Penukaran</span>
-                    </a>
-                </li>
-                <li class="pc-item pc-caption">
                     <label style="color: red;">Reseller & Supplier</label>
                     <i class="ti ti-news"></i>
                 </li>
@@ -219,6 +161,64 @@
                     <a href="/petty_cash" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-wallet"></i></span>
                         <span class="pc-mtext">Petty Cash NZ</span>
+                    </a>
+                </li>
+                <li class="pc-item pc-caption">
+                    <label style="color: red;">Pengembalian / Pembatalan</label>
+                    <i class="ti ti-news"></i>
+                </li>
+                <li class="pc-item">
+                    <a href="/bandings" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-report-analytics"></i></span>
+                        <span class="pc-mtext">Daftar Banding</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/bandings/search" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-qrcode"></i></span>
+                        <span class="pc-mtext">Scan Resi</span>
+                    </a>
+                </li>
+                {{-- <li class="pc-item">
+                    <a href="/bandings/search-ok" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-barcode"></i></span>
+                        <span class="pc-mtext">Scan Resi V2</span>
+                    </a>
+                </li> --}}
+                <li class="pc-item">
+                    <a href="/scan-ok" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-barcode"></i></span>
+                        <span class="pc-mtext">Scan Resi V2</span>
+                    </a>
+                </li>
+                {{-- <li class="pc-item">
+                    <a href="/ok" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-circle-check"></i></span>
+                        <span class="pc-mtext">Daftar Status Diterima OK</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/belum" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-circle-x"></i></span>
+                        <span class="pc-mtext">Status Belum Diterima</span>
+                    </a>
+                </li> --}}
+                <li class="pc-item">
+                    <a href="/data-ok" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-circle-check"></i></span>
+                        <span class="pc-mtext">Daftar Status Diterima OK</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/data-belum" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-circle-x"></i></span>
+                        <span class="pc-mtext">Status Belum Diterima</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/pengembalian-penukaran" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-refresh"></i></span>
+                        <span class="pc-mtext">Pengembalian_Penukaran</span>
                     </a>
                 </li>
                 <li class="pc-item pc-caption">

@@ -156,6 +156,11 @@
                                                 value="{{ $reseller->nama }}" required>
                                         </div>
                                         <div class="mb-3">
+                                            <label class="form-label">Telepon (WA)</label>
+                                            <input type="text" name="telepon" class="form-control"
+                                                value="{{ $reseller->telepon }}" placeholder="628xxx">
+                                        </div>
+                                        <div class="mb-3">
                                             <label class="form-label">Hutang Awal</label>
                                             <div class="input-group">
                                                 <span class="input-group-text">Rp</span>
@@ -326,6 +331,10 @@
                         <div class="mb-3">
                             <label class="form-label">Nama Reseller</label>
                             <input type="text" name="nama" class="form-control" placeholder="Nama Reseller" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Telepon (WA)</label>
+                            <input type="text" name="telepon" class="form-control" placeholder="628xxx">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Hutang Awal</label>

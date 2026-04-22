@@ -403,4 +403,68 @@ class ResellerTransactionController extends Controller
 
         return redirect()->back()->with('success', 'Pembayaran tagihan berhasil dicatat.');
     }
+    public function invoice(Request $request, Reseller $reseller)
+    {
+        $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->toDateString());
+        $endDate = $request->input('end_date', Carbon::now()->toDateString());
+
+        // 1. Calculate Previous Balance
+        // Sum of all sales before start date - sum of all payments before start date
+        $allSalesBefore = ResellerTransaction::where('reseller_id', $reseller->id)
+            ->where('tgl', '<', $startDate)
+            ->sum('total_uang');
+
+        $allPaymentsBefore = ResellerPayment::where('reseller_id', $reseller->id)
+            ->where('tgl', '<', $startDate)
+            ->sum('nominal');
+
+        // Note: hutang_awal is the manual initial debt entered when creating the reseller.
+        // It is treated as a "beginning balance" at time zero.
+        $prevBalance = $reseller->hutang_awal + $allSalesBefore - $allPaymentsBefore;
+
+        // 2. Fetch Line Items (Sales)
+        $details = ResellerTransactionDetail::join('reseller_transactions', 'reseller_transaction_details.reseller_transaction_id', '=', 'reseller_transactions.id')
+            ->join('barangs', 'reseller_transaction_details.barang_id', '=', 'barangs.id')
+            ->where('reseller_transactions.reseller_id', $reseller->id)
+            ->whereBetween('reseller_transactions.tgl', [$startDate, $endDate])
+            ->select(
+                'reseller_transactions.tgl',
+                'barangs.namabarang',
+                'barangs.ukuran',
+                'reseller_transaction_details.jumlah',
+                'reseller_transaction_details.subtotal',
+                DB::raw("'sale' as type")
+            )
+            ->get();
+
+        // 3. Fetch Payments
+        $payments = ResellerPayment::where('reseller_id', $reseller->id)
+            ->whereBetween('tgl', [$startDate, $endDate])
+            ->select(
+                'tgl',
+                'nominal as subtotal',
+                DB::raw("'payment' as type")
+            )
+            ->get();
+
+        // 4. Merge and Group by Date
+        $merged = $details->concat($payments);
+        $dates = $merged->pluck('tgl')->unique()->sort();
+
+        $items = [];
+        foreach ($dates as $date) {
+            $dayItems = $merged->where('tgl', $date);
+            $sales = $dayItems->where('type', 'sale');
+            $pay = $dayItems->where('type', 'payment');
+
+            $items[] = (object)[
+                'tgl' => $date,
+                'sales_details' => $sales, // Collection of sales for the day
+                'tagihan' => $sales->sum('subtotal'),
+                'bayar' => $pay->sum('subtotal'),
+            ];
+        }
+
+        return view('reseller_transactions.invoice', compact('reseller', 'items', 'prevBalance', 'startDate', 'endDate'));
+    }
 }

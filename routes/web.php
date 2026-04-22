@@ -175,6 +175,7 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/reseller_transactions/reseller/{reseller}/pay_debt', [ResellerTransactionController::class, 'payDebt'])->name('reseller_transactions.pay_debt');
     Route::get('/reseller_transactions/reseller/{reseller}', [ResellerTransactionController::class, 'resellerShow'])->name('reseller_transactions.show_reseller');
+    Route::get('/reseller_transactions/reseller/{reseller}/invoice', [ResellerTransactionController::class, 'invoice'])->name('reseller_transactions.invoice');
     Route::resource('reseller_transactions', ResellerTransactionController::class);
 
     // Supplier Transaction Routes
