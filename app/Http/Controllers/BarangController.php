@@ -126,16 +126,23 @@ class BarangController extends Controller
                 ], 400);
             }
 
-            Barang::truncate();
+            // Gunakan delete() alih-alih truncate() untuk menghindari error foreign key constraint
+            Barang::query()->delete();
 
             return response()->json([
                 'success' => true,
                 'message' => "Semua data barang ($count data) berhasil dihapus!"
             ]);
         } catch (\Exception $e) {
+            $message = $e->getMessage();
+            // Memberikan pesan yang lebih ramah jika terjadi error relasi database
+            if (str_contains($message, 'foreign key constraint')) {
+                $message = 'Beberapa barang tidak bisa dihapus karena sudah digunakan dalam transaksi (Reseller Transaction). Hapus data transaksi terkait terlebih dahulu jika ingin mengosongkan daftar barang.';
+            }
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menghapus semua data barang: ' . $e->getMessage()
+                'message' => 'Gagal menghapus semua data barang: ' . $message
             ], 500);
         }
     }
