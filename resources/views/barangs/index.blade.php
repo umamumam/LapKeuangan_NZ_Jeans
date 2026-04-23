@@ -33,6 +33,11 @@
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="fas fa-boxes text-primary"></i> Daftar Barang</h5>
                         <div class="d-flex gap-2">
+                            @if($barangs->count() > 0)
+                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteAllBarangs()">
+                                <i class="fas fa-trash-alt"></i> Hapus Semua
+                            </button>
+                            @endif
                             <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#importModal">
                                 <i class="fas fa-file-import"></i> Import
                             </button>
@@ -339,5 +344,52 @@
                 });
             });
         });
+
+        // Delete all barangs
+        function deleteAllBarangs() {
+            Swal.fire({
+                title: 'Hapus Semua Barang?',
+                html: `Yakin menghapus <strong>semua data barang</strong>?<br>
+                       <small class="text-danger">Tindakan ini tidak dapat dibatalkan!</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus Semua',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#d33',
+                showLoaderOnConfirm: true,
+                preConfirm: () => {
+                    return fetch('{{ route("barangs.delete-all") }}', {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            throw new Error(data.message || 'Gagal menghapus data');
+                        }
+                        return data;
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage(`Harap tunggu: ${error.message}`);
+                    });
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Berhasil!',
+                        text: result.value.message || 'Semua data barang berhasil dihapus!',
+                        icon: 'success',
+                        timer: 3000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                }
+            });
+        }
     </script>
 </x-app-layout>

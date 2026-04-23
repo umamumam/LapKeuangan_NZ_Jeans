@@ -114,4 +114,29 @@ class BarangController extends Controller
             return redirect()->back()->with('error', 'Gagal mengimport data: ' . $e->getMessage());
         }
     }
+
+    public function deleteAll()
+    {
+        try {
+            $count = Barang::count();
+            if ($count === 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada data barang untuk dihapus.'
+                ], 400);
+            }
+
+            Barang::truncate();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Semua data barang ($count data) berhasil dihapus!"
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus semua data barang: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

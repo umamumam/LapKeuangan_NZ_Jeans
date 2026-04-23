@@ -171,6 +171,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('suppliers', SupplierController::class);
     Route::get('/barangs/export', [BarangController::class, 'export'])->name('barangs.export');
     Route::post('/barangs/import', [BarangController::class, 'import'])->name('barangs.import');
+    Route::delete('/barangs/delete-all', [BarangController::class, 'deleteAll'])->name('barangs.delete-all');
     Route::resource('barangs', BarangController::class);
 
     Route::post('/reseller_transactions/reseller/{reseller}/pay_debt', [ResellerTransactionController::class, 'payDebt'])->name('reseller_transactions.pay_debt');
