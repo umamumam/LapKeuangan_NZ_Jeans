@@ -19,7 +19,8 @@ class ResellerTransactionController extends Controller
         $month = $request->input('month', Carbon::now()->format('m'));
         $year = $request->input('year', Carbon::now()->format('Y'));
 
-        $resellers = Reseller::with(['barangs'])->orderBy('nama')->get();
+        $resellers = Reseller::with(['barangs'])->orderBy('updated_at', 'desc')->get();
+        // $resellers = Reseller::with(['barangs'])->orderBy('nama')->get();
 
         $allTransactions = ResellerTransaction::whereYear('tgl', $year)
             ->whereMonth('tgl', $month)
@@ -63,7 +64,7 @@ class ResellerTransactionController extends Controller
         }
 
         // Orang yang Sisa/Kurang < 0 (berhutang/tagihan)
-        $resellersWithDebt = $resellers->filter(function($r) {
+        $resellersWithDebt = $resellers->filter(function ($r) {
             return $r->sisa_kurang < 0;
         })->values();
 
@@ -135,16 +136,16 @@ class ResellerTransactionController extends Controller
         }
 
         $reseller = Reseller::findOrFail($resellerId);
-        
+
         $specificBarangs = Barang::where('reseller_id', $resellerId)->get();
-        
+
         if ($specificBarangs->isNotEmpty()) {
             $barangs = $specificBarangs->sortBy('namabarang');
         } else {
             $barangs = Barang::whereNull('reseller_id')
-                            ->whereNull('supplier_id')
-                            ->orderBy('namabarang')
-                            ->get();
+                ->whereNull('supplier_id')
+                ->orderBy('namabarang')
+                ->get();
         }
 
         return view('reseller_transactions.create', compact('reseller', 'barangs'));
@@ -239,16 +240,16 @@ class ResellerTransactionController extends Controller
     {
         $resellerTransaction->load('details');
         $reseller = Reseller::findOrFail($resellerTransaction->reseller_id);
-        
+
         $specificBarangs = Barang::where('reseller_id', $reseller->id)->get();
 
         if ($specificBarangs->isNotEmpty()) {
             $barangs = $specificBarangs->sortBy('namabarang');
         } else {
             $barangs = Barang::whereNull('reseller_id')
-                            ->whereNull('supplier_id')
-                            ->orderBy('namabarang')
-                            ->get();
+                ->whereNull('supplier_id')
+                ->orderBy('namabarang')
+                ->get();
         }
 
         return view('reseller_transactions.edit', compact('resellerTransaction', 'reseller', 'barangs'));
@@ -385,7 +386,7 @@ class ResellerTransactionController extends Controller
                     $nominal -= $hutang;
                 } else {
                     $trx->bayar += $nominal;
-                    $trx->sisa_kurang += $nominal; 
+                    $trx->sisa_kurang += $nominal;
                     $nominal = 0;
                 }
 
