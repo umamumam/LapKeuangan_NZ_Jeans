@@ -47,15 +47,20 @@
                             }
                             @endphp
                             @if($waPhone)
-                            <button type="button" onclick="sendToWhatsApp()" class="btn btn-success shadow-sm">
-                                <i class="fab fa-whatsapp me-1"></i> Kirim WA & Gambar
+                            <button type="button" onclick="sendToWhatsApp('personal')"
+                                class="btn btn-success shadow-sm">
+                                <i class="fab fa-whatsapp me-1"></i> Kirim ke No WA
                             </button>
                             @else
                             <button type="button" class="btn btn-success shadow-sm disabled"
                                 title="Nomor HP belum diatur">
-                                <i class="fab fa-whatsapp me-1"></i> Kirim WA
+                                <i class="fab fa-whatsapp me-1"></i> Kirim ke No WA
                             </button>
                             @endif
+                            <button type="button" onclick="sendToWhatsApp('group')"
+                                class="btn btn-outline-success shadow-sm">
+                                <i class="fas fa-users me-1"></i> Kirim ke Grup
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -93,98 +98,206 @@
                             <thead style="background-color: #f8f9fa;">
                                 <tr style="border-bottom: 2px solid #333 !important;">
                                     <th rowspan="2" class="align-middle"
-                                        style="width: 100px; border: 1px solid #333 !important;">Tanggal</th>
-                                    <th rowspan="2" class="align-middle" style="border: 1px solid #333 !important;">
+                                        style="width: 100px; border: 1px solid #333 !important; padding: 12px 5px !important;">
+                                        Tanggal</th>
+                                    <th rowspan="2" class="align-middle"
+                                        style="border: 1px solid #333 !important; padding: 12px 5px !important;">
                                         Jenis Barang</th>
                                     <th rowspan="2" class="align-middle"
-                                        style="width: 80px; border: 1px solid #333 !important;">UKURAN</th>
-                                    <th colspan="3" class="text-center" style="border: 1px solid #333 !important;">Harga
+                                        style="width: 80px; border: 1px solid #333 !important; padding: 12px 5px !important;">
+                                        UKURAN</th>
+                                    <th colspan="4" class="text-center"
+                                        style="border: 1px solid #333 !important; padding: 8px !important;">Harga
                                         Jual</th>
                                     <th rowspan="2" class="align-middle"
-                                        style="width: 120px; border: 1px solid #333 !important;">Total Tagihan</th>
+                                        style="width: 130px; border: 1px solid #333 !important; padding: 12px 5px !important; line-height: 1.2;">
+                                        JUMLAH<br>BAYAR</th>
                                     <th rowspan="2" class="align-middle"
-                                        style="width: 120px; border: 1px solid #333 !important;">Total Bayar</th>
-                                    <th rowspan="2" class="align-middle"
-                                        style="width: 150px; border: 1px solid #333 !important;">Total Hutang</th>
+                                        style="width: 160px; border: 1px solid #333 !important; padding: 12px 5px !important; line-height: 1.2;">
+                                        TOTAL<br>HUTANG</th>
                                 </tr>
                                 <tr style="border-bottom: 2px solid #333 !important;">
-                                    <th style="border: 1px solid #333 !important;">Harga Satuan</th>
-                                    <th style="border: 1px solid #333 !important;">Jumlah</th>
-                                    <th style="border: 1px solid #333 !important;">Total</th>
+                                    <th style="border: 1px solid #333 !important; padding: 8px 5px !important;">Harga
+                                        Satuan</th>
+                                    <th style="border: 1px solid #333 !important; padding: 8px 5px !important;">Perlusin
+                                    </th>
+                                    <th style="border: 1px solid #333 !important; padding: 8px 5px !important;">
+                                        Perpotong</th>
+                                    <th style="border: 1px solid #333 !important; padding: 8px 5px !important;">Jumlah
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <!-- Previous Balance Row -->
                                 <tr class="fw-bold" style="background-color: #fefefe;">
-                                    <td colspan="3" class="text-center text-uppercase"
-                                        style="border: 1px solid #333 !important;">TOTAL</td>
-                                    <td style="border: 1px solid #333 !important;"></td>
-                                    <td style="border: 1px solid #333 !important;"></td>
-                                    <td style="border: 1px solid #333 !important;"></td>
-                                    <td colspan="2" class="text-center text-uppercase"
-                                        style="border: 1px solid #333 !important;">SALDO AWAL</td>
-                                    <td class="text-end" style="border: 1px solid #333 !important;">
-                                        IDR {{ number_format($prevBalance, 0, ',', '.') }}
+                                    <td style="border: 1px solid #333 !important;"></td> {{-- Tanggal Kosong --}}
+                                    <td colspan="6" class="text-center text-uppercase"
+                                        style="border: 1px solid #333 !important; letter-spacing: 2px;">TOTAL</td>
+                                    <td class="text-center text-uppercase"
+                                        style="border: 1px solid #333 !important; font-size: 0.85rem;">
+                                        HUTANG AWAL</td>
+                                    <td class="text-end"
+                                        style="border: 1px solid #333 !important; padding: 5px !important;">
+                                        <table style="width: 100%; border: none !important; background: transparent;">
+                                            <tr style="border: none !important;">
+                                                <td
+                                                    style="text-align: left; border: none !important; padding: 0 !important; font-weight: bold;">
+                                                    IDR</td>
+                                                <td
+                                                    style="text-align: right; border: none !important; padding: 0 !important; font-weight: bold;">
+                                                    {{ number_format($prevBalance, 0, ',', '.') }}</td>
+                                            </tr>
+                                        </table>
                                     </td>
                                 </tr>
 
                                 @php $runningBalance = $prevBalance; @endphp
                                 @foreach($items as $item)
                                 @php
-                                $runningBalance += ($item->tagihan - $item->bayar);
                                 $sales = $item->sales_details;
-                                $rowCount = max(1, $sales->count());
+                                $payments = $item->payments;
+                                $totalDayRows = $sales->count() + $payments->count();
+                                $currentRow = 0;
                                 @endphp
 
-                                @if($sales->count() > 0)
+                                {{-- Render Sales --}}
                                 @foreach($sales as $index => $sale)
+                                @php
+                                $runningBalance += $sale->subtotal;
+                                $currentRow++;
+                                @endphp
                                 <tr style="border-bottom: 1px solid #333 !important;">
-                                    @if($index === 0)
-                                    <td rowspan="{{ $rowCount }}" style="border: 1px solid #333 !important;">{{
-                                        date('d/m/Y', strtotime($item->tgl)) }}</td>
+                                    @if($currentRow === 1)
+                                    <td rowspan="{{ $totalDayRows }}" style="border: 1px solid #333 !important;">
+                                        {{ date('d/m/Y', strtotime($item->tgl)) }}
+                                    </td>
                                     @endif
 
                                     <td class="text-start" style="border: 1px solid #333 !important;">{{
                                         $sale->namabarang }}</td>
                                     <td style="border: 1px solid #333 !important;">{{ $sale->ukuran ?? '-' }}</td>
-                                    <td class="text-end" style="border: 1px solid #333 !important;">IDR {{
-                                        number_format($sale->subtotal / ($sale->jumlah ?: 1), 0, ',', '.') }}</td>
-                                    <td style="border: 1px solid #333 !important;">{{ $sale->jumlah }}</td>
-                                    <td class="text-end" style="border: 1px solid #333 !important;">IDR {{
-                                        number_format($sale->subtotal, 0, ',', '.') }}</td>
-
-                                    @if($index === 0)
-                                    <td rowspan="{{ $rowCount }}" class="text-end fw-bold"
-                                        style="border: 1px solid #333 !important;">
-                                        {{ $item->tagihan > 0 ? 'IDR ' . number_format($item->tagihan, 0, ',', '.') :
-                                        '-' }}
+                                    @php
+                                    $unitPrice = $sale->subtotal / ($sale->jumlah ?: 1);
+                                    $isLusin = $sale->hargajual_perlusin > 0 && round($unitPrice) ==
+                                    round($sale->hargajual_perlusin);
+                                    @endphp
+                                    <td class="text-end"
+                                        style="border: 1px solid #333 !important; padding: 5px !important;">
+                                        <table style="width: 100%; border: none !important; background: transparent;">
+                                            <tr style="border: none !important;">
+                                                <td
+                                                    style="text-align: left; border: none !important; padding: 0 !important;">
+                                                    IDR</td>
+                                                <td
+                                                    style="text-align: right; border: none !important; padding: 0 !important;">
+                                                    {{ number_format($unitPrice, 0, ',', '.') }}</td>
+                                            </tr>
+                                        </table>
                                     </td>
-                                    <td rowspan="{{ $rowCount }}" class="text-end fw-bold"
-                                        style="border: 1px solid #333 !important;">
-                                        {{ $item->bayar > 0 ? 'IDR ' . number_format($item->bayar, 0, ',', '.') : '-' }}
+                                    <td style="border: 1px solid #333 !important;">
+                                        {{ $isLusin ? $sale->jumlah : '' }}
+                                    </td> {{-- Perlusin --}}
+                                    <td style="border: 1px solid #333 !important;">
+                                        {{ !$isLusin ? $sale->jumlah : '' }}
+                                    </td> {{-- Perpotong --}}
+                                    <td class="text-end"
+                                        style="border: 1px solid #333 !important; padding: 5px !important;">
+                                        <table style="width: 100%; border: none !important; background: transparent;">
+                                            <tr style="border: none !important;">
+                                                <td
+                                                    style="text-align: left; border: none !important; padding: 0 !important;">
+                                                    IDR</td>
+                                                <td
+                                                    style="text-align: right; border: none !important; padding: 0 !important;">
+                                                    {{ number_format($sale->subtotal, 0, ',', '.') }}</td>
+                                            </tr>
+                                        </table>
                                     </td>
-                                    <td rowspan="{{ $rowCount }}" class="text-end fw-bold"
-                                        style="border: 1px solid #333 !important;">
-                                        IDR {{ number_format($runningBalance, 0, ',', '.') }}
+                                    <td class="text-end" style="border: 1px solid #333 !important;">-</td>
+                                    <td class="text-end fw-bold"
+                                        style="border: 1px solid #333 !important; padding: 5px !important;">
+                                        <table style="width: 100%; border: none !important; background: transparent;">
+                                            <tr style="border: none !important;">
+                                                <td
+                                                    style="text-align: left; border: none !important; padding: 0 !important; font-weight: bold;">
+                                                    IDR</td>
+                                                <td
+                                                    style="text-align: right; border: none !important; padding: 0 !important; font-weight: bold;">
+                                                    {{ number_format($runningBalance, 0, ',', '.') }}</td>
+                                            </tr>
+                                        </table>
                                     </td>
-                                    @endif
                                 </tr>
                                 @endforeach
-                                @else
-                                {{-- Payment only row --}}
-                                <tr style="border-bottom: 1px solid #333 !important;">
-                                    <td style="border: 1px solid #333 !important;">{{ date('d/m/Y',
-                                        strtotime($item->tgl)) }}</td>
-                                    <td class="text-start" style="border: 1px solid #333 !important;">PEMBAYARAN</td>
+
+                                {{-- Render Payments --}}
+                                @foreach($payments as $index => $pay)
+                                @php
+                                $runningBalance -= $pay->subtotal;
+                                $currentRow++;
+                                @endphp
+                                <tr style="border-bottom: 1px solid #333 !important; background-color: #f0fdf4;">
+                                    @if($currentRow === 1)
+                                    <td rowspan="{{ $totalDayRows }}" style="border: 1px solid #333 !important;">
+                                        {{ date('d/m/Y', strtotime($item->tgl)) }}
+                                    </td>
+                                    @endif
+
+                                    <td class="text-start fw-bold" style="border: 1px solid #333 !important;">PEMBAYARAN
+                                    </td>
                                     <td style="border: 1px solid #333 !important;">-</td>
-                                    <td style="border: 1px solid #333 !important;"></td>
-                                    <td style="border: 1px solid #333 !important;"></td>
-                                    <td style="border: 1px solid #333 !important;"></td>
-                                    <td class="text-end" style="border: 1px solid #333 !important;">-</td>
-                                    <td class="text-end fw-bold" style="border: 1px solid #333 !important;">IDR {{
-                                        number_format($item->bayar, 0, ',', '.') }}</td>
-                                    <td class="text-end fw-bold" style="border: 1px solid #333 !important;">IDR {{
-                                        number_format($runningBalance, 0, ',', '.') }}</td>
+                                    <td style="border: 1px solid #333 !important;">-</td>
+                                    <td style="border: 1px solid #333 !important;">-</td>
+                                    <td style="border: 1px solid #333 !important;">-</td>
+                                    <td style="border: 1px solid #333 !important;">-</td>
+                                    <td class="text-end fw-bold text-success"
+                                        style="border: 1px solid #333 !important; padding: 5px !important;">
+                                        <table style="width: 100%; border: none !important; background: transparent;">
+                                            <tr style="border: none !important;">
+                                                <td
+                                                    style="text-align: left; border: none !important; padding: 0 !important; color: inherit; font-weight: bold;">
+                                                    IDR</td>
+                                                <td
+                                                    style="text-align: right; border: none !important; padding: 0 !important; color: inherit; font-weight: bold;">
+                                                    {{ number_format($pay->subtotal, 0, ',', '.') }}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td class="text-end fw-bold"
+                                        style="border: 1px solid #333 !important; padding: 5px !important;">
+                                        <table style="width: 100%; border: none !important; background: transparent;">
+                                            <tr style="border: none !important;">
+                                                <td
+                                                    style="text-align: left; border: none !important; padding: 0 !important; font-weight: bold;">
+                                                    IDR</td>
+                                                <td
+                                                    style="text-align: right; border: none !important; padding: 0 !important; font-weight: bold;">
+                                                    {{ number_format($runningBalance, 0, ',', '.') }}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                @endforeach
+
+                                {{-- Render Total Row only on Fridays --}}
+                                @if(date('N', strtotime($item->tgl)) == 5)
+                                <tr class="fw-bold" style="background-color: #f8f9fa;">
+                                    <td style="border: 1px solid #333 !important;"></td> {{-- Tanggal Kosong --}}
+                                    <td colspan="7" class="text-center text-uppercase"
+                                        style="border: 1px solid #333 !important; letter-spacing: 2px;">TOTAL</td>
+                                    <td class="text-end"
+                                        style="border: 1px solid #333 !important; padding: 5px !important;">
+                                        <table style="width: 100%; border: none !important; background: transparent;">
+                                            <tr style="border: none !important;">
+                                                <td
+                                                    style="text-align: left; border: none !important; padding: 0 !important; font-weight: bold;">
+                                                    IDR</td>
+                                                <td
+                                                    style="text-align: right; border: none !important; padding: 0 !important; font-weight: bold;">
+                                                    {{ number_format($runningBalance, 0, ',', '.') }}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
                                 </tr>
                                 @endif
                                 @endforeach
@@ -196,8 +309,17 @@
                                         style="border: 1px solid #333 !important; letter-spacing: 1px;">TOTAL HUTANG
                                         SAAT INI</td>
                                     <td class="text-end text-danger"
-                                        style="border: 1px solid #333 !important; font-size: 1.1rem;">
-                                        IDR {{ number_format($runningBalance, 0, ',', '.') }}
+                                        style="border: 1px solid #333 !important; font-size: 1.1rem; padding: 5px !important;">
+                                        <table style="width: 100%; border: none !important; background: transparent;">
+                                            <tr style="border: none !important;">
+                                                <td
+                                                    style="text-align: left; border: none !important; padding: 0 !important; color: red; font-weight: bold;">
+                                                    IDR</td>
+                                                <td
+                                                    style="text-align: right; border: none !important; padding: 0 !important; color: red; font-weight: bold;">
+                                                    {{ number_format($runningBalance, 0, ',', '.') }}</td>
+                                            </tr>
+                                        </table>
                                     </td>
                                 </tr>
                             </tbody>
@@ -205,7 +327,7 @@
                     </div>
 
                     <!-- Footer Notes (WhatsApp format style) -->
-                    <div class="mt-5 row">
+                    <div class="mt-5 row" data-html2canvas-ignore="true">
                         <div class="col-md-6 offset-md-6">
                             <div class="p-4 border border-dark rounded shadow-sm bg-light"
                                 style="border-style: dashed !important;">
@@ -223,7 +345,8 @@
                                 <div class="mt-3 fst-italic text-center">Terima kasih</div>
                             </div>
 
-                            <div class="mt-4 p-3 border border-danger text-danger small" style="border-radius: 8px;">
+                            <div class="mt-4 p-3 border border-danger text-danger small" style="border-radius: 8px;"
+                                data-html2canvas-ignore="true">
                                 <strong>Catatan Penting:</strong><br>
                                 - Setiap menerima totalan diusahakan setiap hari Jum'at LUNAS.
                             </div>
@@ -289,17 +412,17 @@
     </style>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script>
-        function sendToWhatsApp() {
+        function sendToWhatsApp(type = 'personal') {
             const captureArea = document.getElementById('invoice-capture');
             const waPhone = "{{ $waPhone }}";
             const waMessage = `{!! addslashes($waMessage) !!}`;
-
-            // Show a "Processing" state if needed
+ 
+            // Show a "Processing" state
             const btn = event.currentTarget;
             const originalHtml = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
             btn.disabled = true;
-
+ 
             html2canvas(captureArea, {
                 scale: 2, // Better resolution
                 backgroundColor: "#ffffff",
@@ -318,7 +441,7 @@
                     // Reset button
                     btn.innerHTML = originalHtml;
                     btn.disabled = false;
-
+ 
                     // Alert the user that image is downloaded and they should attach it
                     Swal.fire({
                         title: 'Gambar Berhasil Diunduh',
@@ -329,7 +452,15 @@
                         cancelButtonText: 'Tutup'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            window.open(`https://wa.me/${waPhone}?text=${encodeURIComponent(waMessage)}`, '_blank');
+                            let waUrl = '';
+                            if (type === 'group') {
+                                // Link untuk share ke grup/pilih kontak
+                                waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(waMessage)}`;
+                            } else {
+                                // Link untuk chat pribadi ke nomor reseller
+                                waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(waMessage)}`;
+                            }
+                            window.open(waUrl, '_blank');
                         }
                     });
                 }, 'image/png');

@@ -440,6 +440,7 @@ class ResellerTransactionController extends Controller
                 'reseller_transactions.tgl',
                 'barangs.namabarang',
                 'barangs.ukuran',
+                'barangs.hargajual_perlusin',
                 'reseller_transaction_details.jumlah',
                 'reseller_transaction_details.subtotal',
                 DB::raw("'sale' as type")
@@ -456,19 +457,23 @@ class ResellerTransactionController extends Controller
             )
             ->get();
 
-        // 4. Merge and Group by Date
+        // 4. Merge and Group by Date (Y-m-d)
         $merged = $details->concat($payments);
-        $dates = $merged->pluck('tgl')->unique()->sort();
+        
+        // Group by Y-m-d string to ensure all activities on the same day are together
+        $grouped = $merged->groupBy(function($item) {
+            return date('Y-m-d', strtotime($item->tgl));
+        })->sortKeys();
 
         $items = [];
-        foreach ($dates as $date) {
-            $dayItems = $merged->where('tgl', $date);
-            $sales = $dayItems->where('type', 'sale');
-            $pay = $dayItems->where('type', 'payment');
+        foreach ($grouped as $date => $dayItems) {
+            $sales = $dayItems->where('type', 'sale')->values();
+            $pay = $dayItems->where('type', 'payment')->values();
 
             $items[] = (object)[
                 'tgl' => $date,
-                'sales_details' => $sales, // Collection of sales for the day
+                'sales_details' => $sales,
+                'payments' => $pay,
                 'tagihan' => $sales->sum('subtotal'),
                 'bayar' => $pay->sum('subtotal'),
             ];
