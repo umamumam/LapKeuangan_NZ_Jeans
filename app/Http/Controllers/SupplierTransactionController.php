@@ -19,7 +19,16 @@ class SupplierTransactionController extends Controller
         $month = $request->input('month', Carbon::now()->format('m'));
         $year = $request->input('year', Carbon::now()->format('Y'));
 
-        $suppliers = Supplier::with(['barangs'])->orderBy('nama')->get();
+        $suppliers = Supplier::with(['barangs'])
+            ->withMax('transactions', 'updated_at')
+            ->withMax('payments', 'updated_at')
+            ->orderByRaw('GREATEST(
+                COALESCE(updated_at, "1970-01-01"),
+                COALESCE(transactions_max_updated_at, "1970-01-01"),
+                COALESCE(payments_max_updated_at, "1970-01-01")
+            ) DESC')
+            ->get();
+        // $suppliers = Supplier::with(['barangs'])->orderBy('nama')->get();
 
         $allTransactions = SupplierTransaction::whereYear('tgl', $year)
             ->whereMonth('tgl', $month)
@@ -61,7 +70,7 @@ class SupplierTransactionController extends Controller
         }
 
         // Orang yang Sisa/Kurang < 0 (berhutang/tagihan)
-        $suppliersWithDebt = $suppliers->filter(function($r) {
+        $suppliersWithDebt = $suppliers->filter(function ($r) {
             return $r->total_tagihan < 0;
         })->values();
 
@@ -349,7 +358,7 @@ class SupplierTransactionController extends Controller
                     $nominal -= $hutang;
                 } else {
                     $trx->bayar += $nominal;
-                    $trx->total_tagihan += $nominal; 
+                    $trx->total_tagihan += $nominal;
                     $nominal = 0;
                 }
 
