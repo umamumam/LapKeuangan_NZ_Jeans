@@ -21,7 +21,12 @@ class ResellerTransactionController extends Controller
 
         $resellers = Reseller::with(['barangs'])
             ->withMax('transactions', 'updated_at')
-            ->orderByDesc('transactions_max_updated_at')
+            ->withMax('payments', 'updated_at')
+            ->orderByRaw('GREATEST(
+                COALESCE(updated_at, "1970-01-01"),
+                COALESCE(transactions_max_updated_at, "1970-01-01"),
+                COALESCE(payments_max_updated_at, "1970-01-01")
+            ) DESC')
             ->get();
         // $resellers = Reseller::with(['barangs'])->orderBy('nama')->get();
 
