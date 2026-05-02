@@ -20,8 +20,8 @@ class ResellerTransactionController extends Controller
         $year = $request->input('year', Carbon::now()->format('Y'));
 
         $resellers = Reseller::with(['barangs'])
-            ->withMax('transactions', 'tgl')
-            ->orderByDesc('transactions_max_tgl')
+            ->withMax('transactions', 'updated_at')
+            ->orderByDesc('transactions_max_updated_at')
             ->get();
         // $resellers = Reseller::with(['barangs'])->orderBy('nama')->get();
 
