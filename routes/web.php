@@ -175,6 +175,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('barangs', BarangController::class);
 
     Route::post('/reseller_transactions/reseller/{reseller}/pay_debt', [ResellerTransactionController::class, 'payDebt'])->name('reseller_transactions.pay_debt');
+    Route::put('/reseller_transactions/payment/{payment}', [ResellerTransactionController::class, 'updatePayment'])->name('reseller_transactions.update_payment');
+    Route::delete('/reseller_transactions/payment/{payment}', [ResellerTransactionController::class, 'destroyPayment'])->name('reseller_transactions.destroy_payment');
     Route::get('/reseller_transactions/reseller/{reseller}', [ResellerTransactionController::class, 'resellerShow'])->name('reseller_transactions.show_reseller');
     Route::get('/reseller_transactions/reseller/{reseller}/invoice', [ResellerTransactionController::class, 'invoice'])->name('reseller_transactions.invoice');
     Route::resource('reseller_transactions', ResellerTransactionController::class);

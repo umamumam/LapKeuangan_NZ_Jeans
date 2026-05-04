@@ -135,6 +135,9 @@
                     'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)', // Green
                     ];
                     $bgGradient = $gradients[$index % count($gradients)];
+
+                    $totalTagihanGlobal = abs(\App\Models\ResellerTransaction::where('reseller_id', $reseller->id)->where('sisa_kurang', '<', 0)->sum('sisa_kurang')) + $reseller->hutang_awal;
+                    $totalProfitGlobal = \App\Models\ResellerTransaction::where('reseller_id', $reseller->id)->sum('total_keuntungan');
                     @endphp
                     <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
                         <a href="{{ route('reseller_transactions.show_reseller', $reseller->id) }}"
@@ -156,7 +159,7 @@
                                             <i class="fas fa-user-tie text-white" style="font-size: 1.1rem;"></i>
                                         </div>
 
-                                        @if($reseller->sisa_kurang < 0) <span
+                                        @if($totalTagihanGlobal > 0) <span
                                             class="badge bg-danger shadow-sm px-2 py-1"
                                             style="border-radius: 8px; font-size: 0.75rem;">
                                             <i class="fas fa-exclamation-circle me-1"></i> Tagihan
@@ -171,12 +174,11 @@
                                         </h3>
                                         <div class="d-flex align-items-center text-white text-opacity-75 mb-1"
                                             style="font-size: 0.8rem;">
-                                            {{ $reseller->sisa_kurang < 0 ? 'Tagihan:' : 'Sisa:' }} Rp {{
-                                                number_format(abs($reseller->sisa_kurang), 0, ',', '.') }}
+                                            Tagihan: Rp {{ number_format($totalTagihanGlobal, 0, ',', '.') }}
                                         </div>
                                         <div class="d-flex align-items-center text-white font-bold"
                                             style="font-size: 0.85rem;">
-                                            Profit: Rp {{ number_format($reseller->total_keuntungan, 0, ',', '.') }}
+                                            Profit: Rp {{ number_format($totalProfitGlobal, 0, ',', '.') }}
                                         </div>
 
                                         <div class="border-top border-white border-opacity-25 pt-2 mt-2">

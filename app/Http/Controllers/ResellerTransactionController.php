@@ -481,4 +481,188 @@ class ResellerTransactionController extends Controller
 
         return view('reseller_transactions.invoice', compact('reseller', 'items', 'prevBalance', 'startDate', 'endDate'));
     }
+
+    public function updatePayment(Request $request, \App\Models\ResellerPayment $payment)
+    {
+        $request->validate([
+            'tgl' => 'required|date',
+            'nominal' => 'required|numeric|min:0',
+            'keterangan' => 'nullable|string',
+            'bukti_tf' => 'nullable|image|max:2048',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $reseller = Reseller::findOrFail($payment->reseller_id);
+            $oldNominal = $payment->nominal;
+            $newNominal = $request->nominal;
+
+            // Jika nominal berubah, kita harus reverse yang lama dan apply yang baru
+            if ($oldNominal != $newNominal) {
+                // 1. REVERSE THE OLD NOMINAL
+                if ($payment->reseller_transaction_id) {
+                    $trx = ResellerTransaction::find($payment->reseller_transaction_id);
+                    if ($trx) {
+                        $trx->bayar -= $oldNominal;
+                        $trx->sisa_kurang -= $oldNominal;
+                        $trx->save();
+                    }
+                } else {
+                    $nominalToReverse = $oldNominal;
+                    $paidTransactions = ResellerTransaction::where('reseller_id', $reseller->id)
+                        ->where('bayar', '>', 0)
+                        ->orderBy('tgl', 'desc')
+                        ->orderBy('id', 'desc')
+                        ->get();
+
+                    foreach ($paidTransactions as $trx) {
+                        if ($nominalToReverse <= 0) break;
+
+                        // Only reverse up to what was paid
+                        // Wait, a transaction could have been paid by 'Pembayaran Awal'
+                        // Actually, it's safer to just take from bayar
+                        if ($trx->bayar >= $nominalToReverse) {
+                            $trx->bayar -= $nominalToReverse;
+                            $trx->sisa_kurang -= $nominalToReverse;
+                            $nominalToReverse = 0;
+                        } else {
+                            $nominalToReverse -= $trx->bayar;
+                            $trx->sisa_kurang -= $trx->bayar;
+                            $trx->bayar = 0;
+                        }
+                        $trx->save();
+                    }
+
+                    if ($nominalToReverse > 0) {
+                        $reseller->hutang_awal += $nominalToReverse;
+                        $reseller->save();
+                    }
+                }
+
+                // 2. APPLY THE NEW NOMINAL
+                if ($payment->reseller_transaction_id) {
+                    $trx = ResellerTransaction::find($payment->reseller_transaction_id);
+                    if ($trx) {
+                        $trx->bayar += $newNominal;
+                        $trx->sisa_kurang += $newNominal;
+                        $trx->save();
+                    }
+                } else {
+                    $nominalToApply = $newNominal;
+                    if ($reseller->hutang_awal > 0) {
+                        if ($nominalToApply >= $reseller->hutang_awal) {
+                            $nominalToApply -= $reseller->hutang_awal;
+                            $reseller->hutang_awal = 0;
+                        } else {
+                            $reseller->hutang_awal -= $nominalToApply;
+                            $nominalToApply = 0;
+                        }
+                        $reseller->save();
+                    }
+
+                    if ($nominalToApply > 0) {
+                        $debtTransactions = ResellerTransaction::where('reseller_id', $reseller->id)
+                            ->where('sisa_kurang', '<', 0)
+                            ->orderBy('tgl', 'asc')
+                            ->orderBy('id', 'asc')
+                            ->get();
+
+                        foreach ($debtTransactions as $trx) {
+                            if ($nominalToApply <= 0) break;
+
+                            $hutang = abs($trx->sisa_kurang);
+                            if ($nominalToApply >= $hutang) {
+                                $trx->bayar += $hutang;
+                                $trx->sisa_kurang = 0;
+                                $nominalToApply -= $hutang;
+                            } else {
+                                $trx->bayar += $nominalToApply;
+                                $trx->sisa_kurang += $nominalToApply;
+                                $nominalToApply = 0;
+                            }
+                            $trx->save();
+                        }
+                    }
+                }
+            }
+
+            // Update Payment data
+            $buktiTfPath = $payment->bukti_tf;
+            if ($request->hasFile('bukti_tf')) {
+                if ($buktiTfPath) {
+                    Storage::disk('public')->delete($buktiTfPath);
+                }
+                $buktiTfPath = $request->file('bukti_tf')->store('bukti_tf', 'public');
+            }
+
+            $payment->update([
+                'tgl' => $request->tgl,
+                'nominal' => $newNominal,
+                'keterangan' => $request->keterangan ?? $payment->keterangan,
+                'bukti_tf' => $buktiTfPath,
+            ]);
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Pembayaran berhasil diubah.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal mengubah pembayaran: ' . $e->getMessage());
+        }
+    }
+
+    public function destroyPayment(\App\Models\ResellerPayment $payment)
+    {
+        try {
+            DB::beginTransaction();
+            $reseller = Reseller::findOrFail($payment->reseller_id);
+            $nominalToReverse = $payment->nominal;
+
+            if ($payment->reseller_transaction_id) {
+                $trx = ResellerTransaction::find($payment->reseller_transaction_id);
+                if ($trx) {
+                    $trx->bayar -= $nominalToReverse;
+                    $trx->sisa_kurang -= $nominalToReverse;
+                    $trx->save();
+                }
+            } else {
+                $paidTransactions = ResellerTransaction::where('reseller_id', $reseller->id)
+                    ->where('bayar', '>', 0)
+                    ->orderBy('tgl', 'desc')
+                    ->orderBy('id', 'desc')
+                    ->get();
+
+                foreach ($paidTransactions as $trx) {
+                    if ($nominalToReverse <= 0) break;
+
+                    if ($trx->bayar >= $nominalToReverse) {
+                        $trx->bayar -= $nominalToReverse;
+                        $trx->sisa_kurang -= $nominalToReverse;
+                        $nominalToReverse = 0;
+                    } else {
+                        $nominalToReverse -= $trx->bayar;
+                        $trx->sisa_kurang -= $trx->bayar;
+                        $trx->bayar = 0;
+                    }
+                    $trx->save();
+                }
+
+                if ($nominalToReverse > 0) {
+                    $reseller->hutang_awal += $nominalToReverse;
+                    $reseller->save();
+                }
+            }
+
+            if ($payment->bukti_tf) {
+                Storage::disk('public')->delete($payment->bukti_tf);
+            }
+            $payment->delete();
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Pembayaran berhasil dihapus.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal menghapus pembayaran: ' . $e->getMessage());
+        }
+    }
 }
