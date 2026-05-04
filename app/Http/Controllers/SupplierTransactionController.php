@@ -376,4 +376,183 @@ class SupplierTransactionController extends Controller
 
         return redirect()->back()->with('success', 'Pembayaran tagihan berhasil dicatat.');
     }
+
+    public function updatePayment(Request $request, \App\Models\SupplierPayment $payment)
+    {
+        $request->validate([
+            'tgl' => 'required|date',
+            'nominal' => 'required|numeric|min:0',
+            'keterangan' => 'nullable|string',
+            'bukti_tf' => 'nullable|image|max:2048',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $supplier = Supplier::findOrFail($payment->supplier_id);
+            $oldNominal = $payment->nominal;
+            $newNominal = $request->nominal;
+
+            if ($oldNominal != $newNominal) {
+                // 1. REVERSE THE OLD NOMINAL
+                if ($payment->supplier_transaction_id) {
+                    $trx = SupplierTransaction::find($payment->supplier_transaction_id);
+                    if ($trx) {
+                        $trx->bayar -= $oldNominal;
+                        $trx->total_tagihan -= $oldNominal;
+                        $trx->save();
+                    }
+                } else {
+                    $nominalToReverse = $oldNominal;
+                    $paidTransactions = SupplierTransaction::where('supplier_id', $supplier->id)
+                        ->where('bayar', '>', 0)
+                        ->orderBy('tgl', 'desc')
+                        ->orderBy('id', 'desc')
+                        ->get();
+
+                    foreach ($paidTransactions as $trx) {
+                        if ($nominalToReverse <= 0) break;
+
+                        if ($trx->bayar >= $nominalToReverse) {
+                            $trx->bayar -= $nominalToReverse;
+                            $trx->total_tagihan -= $nominalToReverse;
+                            $nominalToReverse = 0;
+                        } else {
+                            $nominalToReverse -= $trx->bayar;
+                            $trx->total_tagihan -= $trx->bayar;
+                            $trx->bayar = 0;
+                        }
+                        $trx->save();
+                    }
+
+                    if ($nominalToReverse > 0) {
+                        $supplier->hutang_awal += $nominalToReverse;
+                        $supplier->save();
+                    }
+                }
+
+                // 2. APPLY THE NEW NOMINAL
+                if ($payment->supplier_transaction_id) {
+                    $trx = SupplierTransaction::find($payment->supplier_transaction_id);
+                    if ($trx) {
+                        $trx->bayar += $newNominal;
+                        $trx->total_tagihan += $newNominal;
+                        $trx->save();
+                    }
+                } else {
+                    $nominalToApply = $newNominal;
+                    if ($supplier->hutang_awal > 0) {
+                        if ($nominalToApply >= $supplier->hutang_awal) {
+                            $nominalToApply -= $supplier->hutang_awal;
+                            $supplier->hutang_awal = 0;
+                        } else {
+                            $supplier->hutang_awal -= $nominalToApply;
+                            $nominalToApply = 0;
+                        }
+                        $supplier->save();
+                    }
+
+                    if ($nominalToApply > 0) {
+                        $debtTransactions = SupplierTransaction::where('supplier_id', $supplier->id)
+                            ->where('total_tagihan', '<', 0)
+                            ->orderBy('tgl', 'asc')
+                            ->orderBy('id', 'asc')
+                            ->get();
+
+                        foreach ($debtTransactions as $trx) {
+                            if ($nominalToApply <= 0) break;
+
+                            $hutang = abs($trx->total_tagihan);
+                            if ($nominalToApply >= $hutang) {
+                                $trx->bayar += $hutang;
+                                $trx->total_tagihan = 0;
+                                $nominalToApply -= $hutang;
+                            } else {
+                                $trx->bayar += $nominalToApply;
+                                $trx->total_tagihan += $nominalToApply;
+                                $nominalToApply = 0;
+                            }
+                            $trx->save();
+                        }
+                    }
+                }
+            }
+
+            $buktiTfPath = $payment->bukti_tf;
+            if ($request->hasFile('bukti_tf')) {
+                if ($buktiTfPath) {
+                    Storage::disk('public')->delete($buktiTfPath);
+                }
+                $buktiTfPath = $request->file('bukti_tf')->store('bukti_tf', 'public');
+            }
+
+            $payment->update([
+                'tgl' => $request->tgl,
+                'nominal' => $newNominal,
+                'keterangan' => $request->keterangan ?? $payment->keterangan,
+                'bukti_tf' => $buktiTfPath,
+            ]);
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Pembayaran berhasil diubah.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal mengubah pembayaran: ' . $e->getMessage());
+        }
+    }
+
+    public function destroyPayment(\App\Models\SupplierPayment $payment)
+    {
+        try {
+            DB::beginTransaction();
+            $supplier = Supplier::findOrFail($payment->supplier_id);
+            $nominalToReverse = $payment->nominal;
+
+            if ($payment->supplier_transaction_id) {
+                $trx = SupplierTransaction::find($payment->supplier_transaction_id);
+                if ($trx) {
+                    $trx->bayar -= $nominalToReverse;
+                    $trx->total_tagihan -= $nominalToReverse;
+                    $trx->save();
+                }
+            } else {
+                $paidTransactions = SupplierTransaction::where('supplier_id', $supplier->id)
+                    ->where('bayar', '>', 0)
+                    ->orderBy('tgl', 'desc')
+                    ->orderBy('id', 'desc')
+                    ->get();
+
+                foreach ($paidTransactions as $trx) {
+                    if ($nominalToReverse <= 0) break;
+
+                    if ($trx->bayar >= $nominalToReverse) {
+                        $trx->bayar -= $nominalToReverse;
+                        $trx->total_tagihan -= $nominalToReverse;
+                        $nominalToReverse = 0;
+                    } else {
+                        $nominalToReverse -= $trx->bayar;
+                        $trx->total_tagihan -= $trx->bayar;
+                        $trx->bayar = 0;
+                    }
+                    $trx->save();
+                }
+
+                if ($nominalToReverse > 0) {
+                    $supplier->hutang_awal += $nominalToReverse;
+                    $supplier->save();
+                }
+            }
+
+            if ($payment->bukti_tf) {
+                Storage::disk('public')->delete($payment->bukti_tf);
+            }
+            $payment->delete();
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Pembayaran berhasil dihapus.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal menghapus pembayaran: ' . $e->getMessage());
+        }
+    }
 }

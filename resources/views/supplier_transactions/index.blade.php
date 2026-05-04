@@ -123,6 +123,8 @@
                     'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
                     ];
                     $bgGradient = $gradients[$index % count($gradients)];
+
+                    $totalTagihanGlobal = abs(\App\Models\SupplierTransaction::where('supplier_id', $supplier->id)->where('total_tagihan', '<', 0)->sum('total_tagihan')) + $supplier->hutang_awal;
                     @endphp
                     <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
                         <a href="{{ route('supplier_transactions.show_supplier', $supplier->id) }}"
@@ -144,7 +146,7 @@
                                             <i class="fas fa-truck-moving text-white" style="font-size: 1.1rem;"></i>
                                         </div>
 
-                                        @if($supplier->total_tagihan < 0) <span
+                                        @if($totalTagihanGlobal > 0) <span
                                             class="badge bg-danger shadow-sm px-2 py-1"
                                             style="border-radius: 8px; font-size: 0.75rem;">
                                             <i class="fas fa-exclamation-circle me-1"></i> Tagihan
@@ -159,8 +161,7 @@
                                         </h3>
                                         <div class="d-flex align-items-center text-white text-opacity-75 mb-1"
                                             style="font-size: 0.8rem;">
-                                            {{ $supplier->total_tagihan < 0 ? 'Tagihan:' : 'Sisa:' }} Rp {{
-                                                number_format(abs($supplier->total_tagihan), 0, ',', '.') }}
+                                            Tagihan: Rp {{ number_format($totalTagihanGlobal, 0, ',', '.') }}
                                         </div>
 
                                         <div class="border-top border-white border-opacity-25 pt-2 mt-2">

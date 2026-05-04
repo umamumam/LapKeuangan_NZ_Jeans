@@ -332,10 +332,11 @@
                         style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">
                         <tr>
                             <th class="ps-4 py-3" style="width: 5%">#</th>
-                            <th class="py-3" style="width: 20%">Tanggal</th>
-                            <th class="py-3" style="width: 35%">Keterangan</th>
+                            <th class="py-3" style="width: 15%">Tanggal</th>
+                            <th class="py-3" style="width: 25%">Keterangan</th>
                             <th class="py-3" style="width: 20%">Nominal Bayar</th>
-                            <th class="text-center py-3 pe-4" style="width: 20%">Bukti Transaksi</th>
+                            <th class="text-center py-3" style="width: 15%">Bukti</th>
+                            <th class="text-center py-3 pe-4" style="width: 20%">Aksi</th>
                         </tr>
                     </thead>
                     <tbody style="font-size: 0.9rem;">
@@ -365,22 +366,86 @@
                             <td class="fw-bold text-success py-3">
                                 - Rp {{ number_format($payment->nominal, 0, ',', '.') }}
                             </td>
-                            <td class="text-center py-3 pe-4">
+                            <td class="text-center py-3">
                                 @if($payment->bukti_tf)
                                 <a href="{{ asset('storage/' . $payment->bukti_tf) }}" target="_blank"
                                     class="btn btn-sm btn-light text-primary border-primary border-opacity-25 shadow-sm rounded-pill px-3"
                                     style="font-size: 0.75rem;">
-                                    <i class="fas fa-image me-1"></i> Cek Bukti
+                                    <i class="fas fa-image"></i>
                                 </a>
                                 @else
                                 <span class="badge bg-light text-muted fw-normal border" style="font-size: 0.75rem;"><i
-                                        class="fas fa-times me-1"></i>Tanpa Bukti</span>
+                                        class="fas fa-times"></i></span>
                                 @endif
                             </td>
+                            <td class="text-center py-3 pe-4">
+                                <div class="d-flex justify-content-center gap-1">
+                                    <button type="button" class="btn btn-warning btn-sm text-white btn-aksi shadow-sm" data-bs-toggle="modal" data-bs-target="#editPaymentModal{{ $payment->id }}" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <form action="{{ route('supplier_transactions.destroy_payment', $payment->id) }}" method="POST" onsubmit="return confirm('Hapus pembayaran ini? Semua kalkulasi tagihan terkait akan dikembalikan seperti semula.')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm btn-aksi shadow-sm" title="Hapus">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
                         </tr>
+
+                        <!-- Modal Edit Payment -->
+                        <div class="modal fade" id="editPaymentModal{{ $payment->id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border-0 shadow">
+                                    <div class="modal-header bg-warning text-dark">
+                                        <h5 class="modal-title fw-bold">
+                                            <i class="fas fa-edit me-2"></i> Edit Pembayaran
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <form action="{{ route('supplier_transactions.update_payment', $payment->id) }}" method="POST" onsubmit="return confirm('Proses perubahan pembayaran ini? Sistem akan menghitung ulang tagihan secara otomatis.')" enctype="multipart/form-data">
+                                        @csrf
+                                        @method('PUT')
+                                        <div class="modal-body p-4 text-start">
+                                            <div class="alert alert-warning border-0 shadow-sm mb-4" style="font-size: 0.85rem;">
+                                                <i class="fas fa-exclamation-circle me-2"></i>
+                                                Mengubah nominal akan mempengaruhi tagihan transaksi yang terkait.
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold text-dark">Tanggal Pembayaran</label>
+                                                <input type="date" name="tgl" class="form-control" value="{{ \Carbon\Carbon::parse($payment->tgl)->format('Y-m-d') }}" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold text-dark">Keterangan</label>
+                                                <input type="text" name="keterangan" class="form-control" value="{{ $payment->keterangan }}">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold text-dark">Nominal Pembayaran</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text bg-light fw-bold text-muted border-end-0">Rp</span>
+                                                    <input type="number" name="nominal" class="form-control form-control-lg border-start-0 ps-0 text-success fw-bold" required min="0" value="{{ number_format($payment->nominal, 0, '', '') }}">
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold text-dark">Ganti Bukti Transfer (Opsional)</label>
+                                                <input type="file" name="bukti_tf" class="form-control" accept="image/*">
+                                                @if($payment->bukti_tf)
+                                                <small class="text-muted d-block mt-1">Kosongkan jika tidak ingin mengubah gambar.</small>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer bg-light border-0 pt-2 pb-2">
+                                            <button type="button" class="btn btn-secondary shadow-sm" data-bs-dismiss="modal">Batal</button>
+                                            <button type="submit" class="btn btn-warning shadow-sm px-4 fw-bold text-dark">Simpan Perubahan <i class="fas fa-save ms-1"></i></button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                         @empty
                         <tr>
-                            <td colspan="5" class="text-center py-5">
+                            <td colspan="6" class="text-center py-5">
                                 <div class="text-muted mb-2"><i class="fas fa-inbox fa-3x opacity-25"></i></div>
                                 <h6 class="fw-bold text-muted mb-0">Belum ada rincian riwayat bayar bulan ini.</h6>
                             </td>

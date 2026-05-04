@@ -183,6 +183,8 @@ Route::middleware('auth')->group(function () {
 
     // Supplier Transaction Routes
     Route::post('/supplier-transactions/supplier/{supplier}/pay-debt', [SupplierTransactionController::class, 'payDebt'])->name('supplier_transactions.pay_debt');
+    Route::put('/supplier-transactions/payment/{payment}', [SupplierTransactionController::class, 'updatePayment'])->name('supplier_transactions.update_payment');
+    Route::delete('/supplier-transactions/payment/{payment}', [SupplierTransactionController::class, 'destroyPayment'])->name('supplier_transactions.destroy_payment');
     Route::get('/supplier-transactions/supplier/{supplier}', [SupplierTransactionController::class, 'supplierShow'])->name('supplier_transactions.show_supplier');
     Route::resource('supplier_transactions', SupplierTransactionController::class);
     Route::resource('penarikan_omset', PenarikanOmsetController::class);
