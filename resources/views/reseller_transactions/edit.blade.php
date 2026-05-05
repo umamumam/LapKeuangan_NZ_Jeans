@@ -69,7 +69,9 @@
                         </div>
 
                         <hr>
-                        <h6 class="mb-3">Detail Barang</h6>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="mb-0">Detail Barang <span id="detailPriceMode" class="text-white fw-normal" style="font-size: 0.8rem; opacity: 0.9;"></span></h6>
+                        </div>
 
                         <div class="table-responsive">
                             <table class="table table-bordered" id="detailsTable">
@@ -189,7 +191,9 @@
             data-id="{{ $barang->id }}" data-hpp="{{ $barang->hpp ?? 0 }}"
             data-jual-potong="{{ $barang->hargajual_perpotong ?? 0 }}"
             data-jual-lusin="{{ $barang->hargajual_perlusin ?? 0 }}" data-grosir="{{ $barang->harga_grosir ?? 0 }}"
-            data-beli-potong="{{ $barang->hargabeli_perpotong ?? 0 }}" data-reseller-id="{{ $barang->reseller_id }}"
+            data-beli-potong="{{ $barang->hargabeli_perpotong ?? 0 }}" 
+            data-beli-lusin="{{ $barang->hargabeli_perlusin ?? 0 }}"
+            data-reseller-id="{{ $barang->reseller_id }}"
             data-supplier-id="{{ $barang->supplier_id }}">
         </option>
         @endforeach
@@ -242,6 +246,7 @@
 
                                 // Update Indicator and Header
                                 document.getElementById('priceModeText').textContent = btn.textContent;
+                                document.getElementById('detailPriceMode').textContent = '(Mode: ' + btn.textContent + ')';
                                 document.getElementById('hargaHeader').textContent = btn.textContent;
 
                                 // Refresh existing rows so price changes
@@ -391,7 +396,15 @@
                             harga = parseFloat(option.getAttribute('data-grosir')) || 0;
                         }
 
-                        const hargaBeli = parseFloat(option.getAttribute('data-beli-potong')) || 0;
+                        // Hitung keuntungan berdasarkan mode
+                        let hargaBeli = 0;
+                        if (currentPriceMode === 'jual_lusin') {
+                            hargaBeli = parseFloat(option.getAttribute('data-beli-lusin')) || 0;
+                        } else {
+                            // Untuk jual_potong, grosir, hpp, default gunakan beli_potong
+                            hargaBeli = parseFloat(option.getAttribute('data-beli-potong')) || 0;
+                        }
+
                         const jumlah = parseFloat(jumlahInput.value) || 0;
                         const keuntungan = (harga - hargaBeli) * jumlah;
                         tr.querySelector('.keuntungan-input').value = keuntungan;
