@@ -256,7 +256,7 @@
                             <th>Retur</th>
                             <th>Total Harga</th>
                             {{-- <th>Bayar</th> --}}
-                            <th>Sisa/Kurang</th>
+                            {{-- <th>Sisa/Kurang</th> --}}
                             <th>keuntungan</th>
                             <th class="text-center">Aksi</th>
                         </tr>
@@ -270,7 +270,7 @@
                             <td class="fw-bold">Rp {{ number_format($trx->total_uang, 0, ',', '.') }}</td>
                             {{-- <td class="text-success fw-bold">Rp {{ number_format($trx->bayar, 0, ',', '.') }}</td>
                             --}}
-                            <td>
+                            {{-- <td>
                                 @if($trx->sisa_kurang > 0)
                                 <span class="badge bg-success bg-opacity-10 text-success px-2 py-1 rounded-pill">+
                                     Rp {{ number_format($trx->sisa_kurang, 0, ',', '.') }}</span>
@@ -281,7 +281,7 @@
                                     <span
                                         class="badge bg-secondary bg-opacity-10 text-secondary px-2 py-1 rounded-pill">Lunas</span>
                                     @endif
-                            </td>
+                            </td> --}}
                             <td class="text-primary fw-bold">Rp {{ number_format($trx->total_keuntungan, 0, ',',
                                 '.') }}</td>
                             <td class="text-center">
