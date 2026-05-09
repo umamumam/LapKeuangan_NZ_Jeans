@@ -86,11 +86,11 @@
                                                         }}</span>
                                                 </div>
                                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                                    <span class="text-muted" style="font-size: 11px;">Tagihan</span>
+                                                    <span class="text-muted" style="font-size: 11px;">{{ $rekapGlobal[$key]['total_tagihan'] < 0 ? 'Tagihan' : 'Sisa' }}</span>
                                                     <span
-                                                        class="{{ $rekapGlobal[$key]['total_tagihan'] >= 0 ? 'text-dark' : 'text-danger' }} fw-bold"
+                                                        class="{{ $rekapGlobal[$key]['total_tagihan'] >= 0 ? 'text-primary' : 'text-danger' }} fw-bold"
                                                         style="font-size: 12px;">
-                                                        {{ $rekapGlobal[$key]['total_tagihan'] >= 0 ? '' : '-' }} Rp {{
+                                                        {{ $rekapGlobal[$key]['total_tagihan'] >= 0 ? '+' : '-' }} Rp {{
                                                         number_format(abs($rekapGlobal[$key]['total_tagihan']), 0, ',',
                                                         '.')
                                                         }}
@@ -124,7 +124,7 @@
                     ];
                     $bgGradient = $gradients[$index % count($gradients)];
 
-                    $totalTagihanGlobal = abs(\App\Models\SupplierTransaction::where('supplier_id', $supplier->id)->where('total_tagihan', '<', 0)->sum('total_tagihan')) + $supplier->hutang_awal;
+                    $totalTagihanGlobal = \App\Models\SupplierTransaction::where('supplier_id', $supplier->id)->sum('total_tagihan') - $supplier->hutang_awal;
                     @endphp
                     <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
                         <a href="{{ route('supplier_transactions.show_supplier', $supplier->id) }}"
@@ -146,12 +146,17 @@
                                             <i class="fas fa-truck-moving text-white" style="font-size: 1.1rem;"></i>
                                         </div>
 
-                                        @if($totalTagihanGlobal > 0) <span
-                                            class="badge bg-danger shadow-sm px-2 py-1"
-                                            style="border-radius: 8px; font-size: 0.75rem;">
-                                            <i class="fas fa-exclamation-circle me-1"></i> Tagihan
+                                        @if($totalTagihanGlobal < 0)
+                                            <span class="badge bg-danger shadow-sm px-2 py-1"
+                                                style="border-radius: 8px; font-size: 0.75rem;">
+                                                <i class="fas fa-exclamation-circle me-1"></i> Tagihan
                                             </span>
-                                            @endif
+                                        @elseif($totalTagihanGlobal > 0)
+                                            <span class="badge bg-primary shadow-sm px-2 py-1"
+                                                style="border-radius: 8px; font-size: 0.75rem;">
+                                                <i class="fas fa-info-circle me-1"></i> Sisa
+                                            </span>
+                                        @endif
                                     </div>
 
                                     <div class="mt-3">
@@ -161,7 +166,7 @@
                                         </h3>
                                         <div class="d-flex align-items-center text-white text-opacity-75 mb-1"
                                             style="font-size: 0.8rem;">
-                                            Tagihan: Rp {{ number_format($totalTagihanGlobal, 0, ',', '.') }}
+                                            {{ $totalTagihanGlobal < 0 ? 'Tagihan' : 'Sisa' }}: Rp {{ number_format(abs($totalTagihanGlobal), 0, ',', '.') }}
                                         </div>
 
                                         <div class="border-top border-white border-opacity-25 pt-2 mt-2">

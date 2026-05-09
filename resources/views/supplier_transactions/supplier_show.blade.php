@@ -172,10 +172,10 @@
 
                     <div class="d-flex gap-2 flex-wrap">
                         @php
-                        $totalTagihanGlobal = abs(\App\Models\SupplierTransaction::where('supplier_id', $supplier->id)->where('total_tagihan', '<', 0)->sum('total_tagihan')) + $supplier->hutang_awal;
-                             @endphp
+                        $totalTagihanGlobal = \App\Models\SupplierTransaction::where('supplier_id', $supplier->id)->sum('total_tagihan') - $supplier->hutang_awal;
+                        @endphp
 
-                            @if($totalTagihanGlobal > 0)
+                        @if($totalTagihanGlobal < 0)
                             <div class="px-3 py-2 rounded shadow bg-danger text-white d-flex align-items-center gap-3">
                                 <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center"
                                     style="width: 36px; height: 36px;">
@@ -185,11 +185,24 @@
                                     <span class="fw-bold text-white text-opacity-75"
                                         style="font-size: 0.7rem; letter-spacing: 0.5px; display: block; margin-bottom: -2px;">TOTAL
                                         TAGIHAN</span>
+                                    <h4 class="mb-0 fw-bolder text-white">Rp {{ number_format(abs($totalTagihanGlobal), 0,
+                                        ',', '.') }}</h4>
+                                </div>
+                            </div>
+                        @elseif($totalTagihanGlobal > 0)
+                            <div class="px-3 py-2 rounded shadow bg-primary text-white d-flex align-items-center gap-3">
+                                <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center"
+                                    style="width: 36px; height: 36px;">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <div>
+                                    <span class="fw-bold text-white text-opacity-75"
+                                        style="font-size: 0.7rem; letter-spacing: 0.5px; display: block; margin-bottom: -2px;">SISA</span>
                                     <h4 class="mb-0 fw-bolder text-white">Rp {{ number_format($totalTagihanGlobal, 0,
                                         ',', '.') }}</h4>
                                 </div>
                             </div>
-                            @else
+                        @else
                             <div
                                 class="px-3 py-2 rounded shadow-sm bg-success text-white d-flex align-items-center gap-3">
                                 <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center"
@@ -201,7 +214,7 @@
                                         style="font-size: 0.85rem; letter-spacing: 0.5px;">TIDAK ADA TAGIHAN</span>
                                 </div>
                             </div>
-                            @endif
+                        @endif
                     </div>
                 </div>
                 <div class="card-body" style="overflow-x:auto;">
