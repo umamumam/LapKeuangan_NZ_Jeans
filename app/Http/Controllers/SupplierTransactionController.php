@@ -20,13 +20,11 @@ class SupplierTransactionController extends Controller
         $year = $request->input('year', Carbon::now()->format('Y'));
 
         $suppliers = Supplier::with(['barangs'])
+            ->withSum('payments', 'nominal')
+            ->withSum('transactions', 'total_uang')
             ->withMax('transactions', 'updated_at')
             ->withMax('payments', 'updated_at')
-            ->orderByRaw('GREATEST(
-                COALESCE(updated_at, "1970-01-01"),
-                COALESCE(transactions_max_updated_at, "1970-01-01"),
-                COALESCE(payments_max_updated_at, "1970-01-01")
-            ) DESC')
+            ->orderBy('nama')
             ->get();
         // $suppliers = Supplier::with(['barangs'])->orderBy('nama')->get();
 
@@ -66,7 +64,9 @@ class SupplierTransactionController extends Controller
             $trx = $allTransactions->where('supplier_id', $supplier->id);
             $supplier->total_uang = $trx->sum('total_uang');
             $supplier->bayar = $trx->sum('bayar');
-            $supplier->total_tagihan = $trx->sum('total_tagihan') - $supplier->hutang_awal;
+            
+            // Global balance using ledger formula: Total Payments - Total Costs - Initial Debt
+            $supplier->total_tagihan = ($supplier->payments_sum_nominal ?? 0) - ($supplier->transactions_sum_total_uang ?? 0) - $supplier->hutang_awal;
         }
 
         // Orang yang Sisa/Kurang < 0 (berhutang/tagihan)
@@ -129,7 +129,9 @@ class SupplierTransactionController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
-        return view('supplier_transactions.supplier_show', compact('supplier', 'transactions', 'rekap', 'month', 'year', 'hasDebt', 'payments'));
+        $globalBalance = $supplier->payments()->sum('nominal') - $supplier->transactions()->sum('total_uang') - $supplier->hutang_awal;
+
+        return view('supplier_transactions.supplier_show', compact('supplier', 'transactions', 'rekap', 'month', 'year', 'hasDebt', 'payments', 'globalBalance'));
     }
 
     public function create(Request $request)
@@ -303,21 +305,6 @@ class SupplierTransactionController extends Controller
     {
         try {
             DB::beginTransaction();
-
-            $supplier = Supplier::find($supplierTransaction->supplier_id);
-            if ($supplier && $supplierTransaction->bayar > 0) {
-                // Hitung berapa bayar yang berasal dari pembayaran tidak terikat (otomatis)
-                // Pembayaran terikat akan terhapus otomatis oleh cascade delete
-                $linkedPaymentsTotal = $supplierTransaction->payments()->sum('nominal');
-                $unlinkedBayar = $supplierTransaction->bayar - $linkedPaymentsTotal;
-
-                if ($unlinkedBayar > 0) {
-                    // Kembalikan dana ke hutang_awal (mengurangi hutang) karena transaksinya dihapus
-                    $supplier->hutang_awal -= $unlinkedBayar;
-                    $supplier->save();
-                }
-            }
-
             $supplierTransaction->delete();
             DB::commit();
             return redirect()->back()->with('success', 'Transaksi berhasil dihapus!');
@@ -342,18 +329,6 @@ class SupplierTransactionController extends Controller
 
         $nominalAsli = $request->nominal;
         $nominal = $request->nominal;
-
-        // 1. Bayar Hutang Awal dulu jika ada
-        if ($supplier->hutang_awal > 0) {
-            if ($nominal >= $supplier->hutang_awal) {
-                $nominal -= $supplier->hutang_awal;
-                $supplier->hutang_awal = 0;
-            } else {
-                $supplier->hutang_awal -= $nominal;
-                $nominal = 0;
-            }
-            $supplier->save();
-        }
 
         // 2. Jika masih ada sisa nominal, baru potong transaksi
         if ($nominal > 0) {
@@ -390,9 +365,7 @@ class SupplierTransactionController extends Controller
                     $nominal = 0;
                 }
             } else {
-                // No transactions at all, put it in hutang_awal (will become negative/surplus)
-                $supplier->hutang_awal -= $nominal;
-                $supplier->save();
+                // No transactions, just save payment. Balance will be updated automatically by formula.
                 $nominal = 0;
             }
         }
@@ -457,8 +430,8 @@ class SupplierTransactionController extends Controller
                     }
 
                     if ($nominalToReverse > 0) {
-                        $supplier->hutang_awal += $nominalToReverse;
-                        $supplier->save();
+                        // Just stop here. Balance will be updated by formula because payment record is deleted/nominal changed.
+                        $nominalToReverse = 0;
                     }
                 }
 
@@ -472,22 +445,10 @@ class SupplierTransactionController extends Controller
                     }
                 } else {
                     $nominalToApply = $newNominal;
-                    if ($supplier->hutang_awal > 0) {
-                        if ($nominalToApply >= $supplier->hutang_awal) {
-                            $nominalToApply -= $supplier->hutang_awal;
-                            $supplier->hutang_awal = 0;
-                        } else {
-                            $supplier->hutang_awal -= $nominalToApply;
-                            $nominalToApply = 0;
-                        }
-                        $supplier->save();
-                    }
-
-                    if ($nominalToApply > 0) {
-                        $allTransactions = SupplierTransaction::where('supplier_id', $supplier->id)
-                            ->orderBy('tgl', 'asc')
-                            ->orderBy('id', 'asc')
-                            ->get();
+                    $allTransactions = SupplierTransaction::where('supplier_id', $supplier->id)
+                        ->orderBy('tgl', 'asc')
+                        ->orderBy('id', 'asc')
+                        ->get();
 
                         if ($allTransactions->isNotEmpty()) {
                             // Pay all debts first
@@ -517,14 +478,11 @@ class SupplierTransactionController extends Controller
                                 $nominalToApply = 0;
                             }
                         } else {
-                            // No transactions, put in hutang_awal
-                            $supplier->hutang_awal -= $nominalToApply;
-                            $supplier->save();
+                            // No transactions, balance handled by ledger
                             $nominalToApply = 0;
                         }
                     }
                 }
-            }
 
             $buktiTfPath = $payment->bukti_tf;
             if ($request->hasFile('bukti_tf')) {
@@ -586,8 +544,7 @@ class SupplierTransactionController extends Controller
                 }
 
                 if ($nominalToReverse > 0) {
-                    $supplier->hutang_awal += $nominalToReverse;
-                    $supplier->save();
+                    // No more transactions to reverse from. Balance is handled by ledger.
                 }
             }
 

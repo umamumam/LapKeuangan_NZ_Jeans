@@ -124,7 +124,7 @@
                     ];
                     $bgGradient = $gradients[$index % count($gradients)];
 
-                    $totalTagihanGlobal = \App\Models\SupplierTransaction::where('supplier_id', $supplier->id)->sum('total_tagihan') - $supplier->hutang_awal;
+                    $totalTagihanGlobal = $supplier->total_tagihan;
                     @endphp
                     <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
                         <a href="{{ route('supplier_transactions.show_supplier', $supplier->id) }}"

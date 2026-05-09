@@ -172,7 +172,7 @@
 
                     <div class="d-flex gap-2 flex-wrap">
                         @php
-                        $totalTagihanGlobal = \App\Models\SupplierTransaction::where('supplier_id', $supplier->id)->sum('total_tagihan') - $supplier->hutang_awal;
+                        $totalTagihanGlobal = $globalBalance;
                         @endphp
 
                         @if($totalTagihanGlobal < 0)
