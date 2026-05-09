@@ -29,7 +29,7 @@
                             }
                             }
 
-                            $waMessage = "Total Tagihan: Rp. " . number_format($totalRunning, 0, ',', '.') . "\n" .
+                            $waMessage = ($totalRunning < 0 ? "Kelebihan Bayar" : "Total Tagihan") . ": Rp. " . number_format(abs($totalRunning), 0, ',', '.') . "\n" .
                             "TRANSFER DIUSAHAKAN TEPAT WAKTU\n" .
                             "TRANSFER KE BCA\n" .
                             "No.Rek\n" .
@@ -322,6 +322,26 @@
                                         </table>
                                     </td>
                                 </tr>
+
+                                @if($runningBalance < 0)
+                                <tr class="fw-bold" style="background-color: #f0fdf4;">
+                                    <td colspan="8" class="text-end text-uppercase"
+                                        style="border: 1px solid #333 !important; letter-spacing: 1px; color: #15803d;">SISA UANG SAAT INI / KELEBIHAN BAYAR</td>
+                                    <td class="text-end text-success"
+                                        style="border: 1px solid #333 !important; font-size: 1.1rem; padding: 5px !important; background-color: #f0fdf4;">
+                                        <table style="width: 100%; border: none !important; background: transparent;">
+                                            <tr style="border: none !important;">
+                                                <td
+                                                    style="text-align: left; border: none !important; padding: 0 !important; color: #15803d; font-weight: bold;">
+                                                    IDR</td>
+                                                <td
+                                                    style="text-align: right; border: none !important; padding: 0 !important; color: #15803d; font-weight: bold;">
+                                                    {{ number_format(abs($runningBalance), 0, ',', '.') }}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                @endif
                             </tbody>
                         </table>
                     </div>
@@ -333,7 +353,11 @@
                                 style="border-style: dashed !important;">
                                 <h6 class="fw-bold mb-3 border-bottom border-dark pb-2">RINCIAN PEMBAYARAN:</h6>
                                 <div class="mb-2">Total Tagihan: <span class="float-end fw-bold">IDR {{
-                                        number_format($runningBalance, 0, ',', '.') }}</span></div>
+                                        number_format($runningBalance < 0 ? 0 : $runningBalance, 0, ',', '.') }}</span></div>
+                                @if($runningBalance < 0)
+                                <div class="mb-2 text-success fw-bold">Kelebihan Bayar: <span class="float-end">IDR {{
+                                        number_format(abs($runningBalance), 0, ',', '.') }}</span></div>
+                                @endif
                                 <div class="mb-3 small text-muted">TRANSFER DIUSAHAKAN TEPAT WAKTU</div>
 
                                 <div class="fw-bold mb-1">TRANSFER KE BCA </div>

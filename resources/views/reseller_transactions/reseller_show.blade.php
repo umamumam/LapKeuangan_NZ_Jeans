@@ -183,7 +183,7 @@
 
                     <div class="d-flex gap-2 flex-wrap">
                         @php
-                            $totalTagihanGlobal = abs(\App\Models\ResellerTransaction::where('reseller_id', $reseller->id)->where('sisa_kurang', '<', 0)->sum('sisa_kurang')) + $reseller->hutang_awal;
+                            $totalTagihanGlobal = $globalBalance;
                             $totalProfitGlobal = \App\Models\ResellerTransaction::where('reseller_id', $reseller->id)->sum('total_keuntungan');
                         @endphp
 
@@ -202,9 +202,7 @@
                                         ',', '.') }}</h4>
                                 </div>
                             </div>
-
-                            <!-- Box Tagihan -->
-                            @if($totalTagihanGlobal > 0)
+                            @if($totalTagihanGlobal < 0)
                             <div class="px-3 py-2 rounded shadow bg-danger text-white d-flex align-items-center gap-3">
                                 <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center"
                                     style="width: 36px; height: 36px;">
@@ -214,7 +212,20 @@
                                     <span class="fw-bold text-white text-opacity-75"
                                         style="font-size: 0.7rem; letter-spacing: 0.5px; display: block; margin-bottom: -2px;">TOTAL
                                         TAGIHAN</span>
-                                    <h4 class="mb-0 fw-bolder text-white">Rp {{ number_format($totalTagihanGlobal, 0,
+                                    <h4 class="mb-0 fw-bolder text-white">Rp {{ number_format(abs($totalTagihanGlobal), 0,
+                                        ',', '.') }}</h4>
+                                </div>
+                            </div>
+                            @elseif($totalTagihanGlobal > 0)
+                            <div class="px-3 py-2 rounded shadow-sm bg-primary text-white d-flex align-items-center gap-3">
+                                <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center"
+                                    style="width: 36px; height: 36px;">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <div>
+                                    <span class="fw-bold text-white text-opacity-75"
+                                        style="font-size: 0.7rem; letter-spacing: 0.5px; display: block; margin-bottom: -2px;">SISA / OVERPAYMENT</span>
+                                    <h4 class="mb-0 fw-bolder text-white">Rp {{ number_format(abs($totalTagihanGlobal), 0,
                                         ',', '.') }}</h4>
                                 </div>
                             </div>

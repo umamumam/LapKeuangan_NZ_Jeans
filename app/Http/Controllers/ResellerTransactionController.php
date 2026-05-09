@@ -20,6 +20,8 @@ class ResellerTransactionController extends Controller
         $year = $request->input('year', Carbon::now()->format('Y'));
 
         $resellers = Reseller::with(['barangs'])
+            ->withSum('payments', 'nominal')
+            ->withSum('transactions', 'total_uang')
             ->withMax('transactions', 'updated_at')
             ->withMax('payments', 'updated_at')
             ->orderByRaw('GREATEST(
@@ -67,7 +69,9 @@ class ResellerTransactionController extends Controller
             $trx = $allTransactions->where('reseller_id', $reseller->id);
             $reseller->total_uang = $trx->sum('total_uang');
             $reseller->bayar = $trx->sum('bayar');
-            $reseller->sisa_kurang = $trx->sum('sisa_kurang') - $reseller->hutang_awal;
+            
+            // Global balance using ledger formula: Total Payments - Total Costs - Initial Debt
+            $reseller->sisa_kurang = ($reseller->payments_sum_nominal ?? 0) - ($reseller->transactions_sum_total_uang ?? 0) - $reseller->hutang_awal;
             $reseller->total_keuntungan = $trx->sum('total_keuntungan');
         }
 
@@ -132,7 +136,9 @@ class ResellerTransactionController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
-        return view('reseller_transactions.reseller_show', compact('reseller', 'transactions', 'rekap', 'month', 'year', 'hasDebt', 'payments'));
+        $globalBalance = $reseller->payments()->sum('nominal') - $reseller->transactions()->sum('total_uang') - $reseller->hutang_awal;
+
+        return view('reseller_transactions.reseller_show', compact('reseller', 'transactions', 'rekap', 'month', 'year', 'hasDebt', 'payments', 'globalBalance'));
     }
 
     public function create(Request $request)
@@ -338,9 +344,12 @@ class ResellerTransactionController extends Controller
     public function destroy(ResellerTransaction $resellerTransaction)
     {
         try {
+            DB::beginTransaction();
             $resellerTransaction->delete();
+            DB::commit();
             return redirect()->back()->with('success', 'Transaksi berhasil dihapus!');
         } catch (\Exception $e) {
+            DB::rollBack();
             return redirect()->back()->with('error', 'Gagal menghapus transaksi: ' . $e->getMessage());
         }
     }
@@ -361,44 +370,42 @@ class ResellerTransactionController extends Controller
         $nominalAsli = $request->nominal;
         $nominal = $request->nominal;
 
-        // 1. Bayar Hutang Awal dulu jika ada
-        if ($reseller->hutang_awal > 0) {
-            if ($nominal >= $reseller->hutang_awal) {
-                $nominal -= $reseller->hutang_awal;
-                $reseller->hutang_awal = 0;
-            } else {
-                $reseller->hutang_awal -= $nominal;
-                $nominal = 0;
-            }
-            $reseller->save();
-        }
-
         // 2. Jika masih ada sisa nominal, baru potong transaksi
         if ($nominal > 0) {
-            $debtTransactions = ResellerTransaction::where('reseller_id', $reseller->id)
-                ->where('sisa_kurang', '<', 0)
+            $allTransactions = ResellerTransaction::where('reseller_id', $reseller->id)
                 ->orderBy('tgl', 'asc')
                 ->orderBy('id', 'asc')
                 ->get();
 
-            foreach ($debtTransactions as $trx) {
-                if ($nominal <= 0) {
-                    break;
+            if ($allTransactions->isNotEmpty()) {
+                foreach ($allTransactions as $trx) {
+                    if ($nominal <= 0) break;
+                    if ($trx->sisa_kurang < 0) {
+                        $hutang = abs($trx->sisa_kurang);
+                        if ($nominal >= $hutang) {
+                            $trx->bayar += $hutang;
+                            $trx->sisa_kurang = 0;
+                            $nominal -= $hutang;
+                        } else {
+                            $trx->bayar += $nominal;
+                            $trx->sisa_kurang += $nominal;
+                            $nominal = 0;
+                        }
+                        $trx->save();
+                    }
                 }
 
-                $hutang = abs($trx->sisa_kurang);
-
-                if ($nominal >= $hutang) {
-                    $trx->bayar += $hutang;
-                    $trx->sisa_kurang = 0;
-                    $nominal -= $hutang;
-                } else {
-                    $trx->bayar += $nominal;
-                    $trx->sisa_kurang += $nominal;
+                // Surplus to latest transaction
+                if ($nominal > 0) {
+                    $latestTrx = $allTransactions->sortByDesc('tgl')->sortByDesc('id')->first();
+                    $latestTrx->bayar += $nominal;
+                    $latestTrx->sisa_kurang += $nominal;
+                    $latestTrx->save();
                     $nominal = 0;
                 }
-
-                $trx->save();
+            } else {
+                // No transactions, ledger handles it
+                $nominal = 0;
             }
         }
 
@@ -535,8 +542,8 @@ class ResellerTransactionController extends Controller
                     }
 
                     if ($nominalToReverse > 0) {
-                        $reseller->hutang_awal += $nominalToReverse;
-                        $reseller->save();
+                        // Ledger handles the rest
+                        $nominalToReverse = 0;
                     }
                 }
 
@@ -550,38 +557,40 @@ class ResellerTransactionController extends Controller
                     }
                 } else {
                     $nominalToApply = $newNominal;
-                    if ($reseller->hutang_awal > 0) {
-                        if ($nominalToApply >= $reseller->hutang_awal) {
-                            $nominalToApply -= $reseller->hutang_awal;
-                            $reseller->hutang_awal = 0;
-                        } else {
-                            $reseller->hutang_awal -= $nominalToApply;
-                            $nominalToApply = 0;
-                        }
-                        $reseller->save();
-                    }
-
+                    
                     if ($nominalToApply > 0) {
-                        $debtTransactions = ResellerTransaction::where('reseller_id', $reseller->id)
-                            ->where('sisa_kurang', '<', 0)
+                        $allTransactions = ResellerTransaction::where('reseller_id', $reseller->id)
                             ->orderBy('tgl', 'asc')
                             ->orderBy('id', 'asc')
                             ->get();
 
-                        foreach ($debtTransactions as $trx) {
-                            if ($nominalToApply <= 0) break;
+                        if ($allTransactions->isNotEmpty()) {
+                            foreach ($allTransactions as $trx) {
+                                if ($nominalToApply <= 0) break;
+                                if ($trx->sisa_kurang < 0) {
+                                    $hutang = abs($trx->sisa_kurang);
+                                    if ($nominalToApply >= $hutang) {
+                                        $trx->bayar += $hutang;
+                                        $trx->sisa_kurang = 0;
+                                        $nominalToApply -= $hutang;
+                                    } else {
+                                        $trx->bayar += $nominalToApply;
+                                        $trx->sisa_kurang += $nominalToApply;
+                                        $nominalToApply = 0;
+                                    }
+                                    $trx->save();
+                                }
+                            }
 
-                            $hutang = abs($trx->sisa_kurang);
-                            if ($nominalToApply >= $hutang) {
-                                $trx->bayar += $hutang;
-                                $trx->sisa_kurang = 0;
-                                $nominalToApply -= $hutang;
-                            } else {
-                                $trx->bayar += $nominalToApply;
-                                $trx->sisa_kurang += $nominalToApply;
+                            if ($nominalToApply > 0) {
+                                $latestTrx = $allTransactions->sortByDesc('tgl')->sortByDesc('id')->first();
+                                $latestTrx->bayar += $nominalToApply;
+                                $latestTrx->sisa_kurang += $nominalToApply;
+                                $latestTrx->save();
                                 $nominalToApply = 0;
                             }
-                            $trx->save();
+                        } else {
+                            $nominalToApply = 0;
                         }
                     }
                 }
@@ -648,8 +657,7 @@ class ResellerTransactionController extends Controller
                 }
 
                 if ($nominalToReverse > 0) {
-                    $reseller->hutang_awal += $nominalToReverse;
-                    $reseller->save();
+                    // Ledger handles it
                 }
             }
 

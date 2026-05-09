@@ -136,8 +136,8 @@
                     ];
                     $bgGradient = $gradients[$index % count($gradients)];
 
-                    $totalTagihanGlobal = abs(\App\Models\ResellerTransaction::where('reseller_id', $reseller->id)->where('sisa_kurang', '<', 0)->sum('sisa_kurang')) + $reseller->hutang_awal;
-                    $totalProfitGlobal = \App\Models\ResellerTransaction::where('reseller_id', $reseller->id)->sum('total_keuntungan');
+                    $totalTagihanGlobal = $reseller->sisa_kurang;
+                    $totalProfitGlobal = $reseller->total_keuntungan;
                     @endphp
                     <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
                         <a href="{{ route('reseller_transactions.show_reseller', $reseller->id) }}"
@@ -159,12 +159,17 @@
                                             <i class="fas fa-user-tie text-white" style="font-size: 1.1rem;"></i>
                                         </div>
 
-                                        @if($totalTagihanGlobal > 0) <span
-                                            class="badge bg-danger shadow-sm px-2 py-1"
-                                            style="border-radius: 8px; font-size: 0.75rem;">
-                                            <i class="fas fa-exclamation-circle me-1"></i> Tagihan
+                                        @if($totalTagihanGlobal < 0)
+                                            <span class="badge bg-danger shadow-sm px-2 py-1"
+                                                style="border-radius: 8px; font-size: 0.75rem;">
+                                                <i class="fas fa-exclamation-circle me-1"></i> Tagihan
                                             </span>
-                                            @endif
+                                        @elseif($totalTagihanGlobal > 0)
+                                            <span class="badge bg-primary shadow-sm px-2 py-1"
+                                                style="border-radius: 8px; font-size: 0.75rem;">
+                                                <i class="fas fa-info-circle me-1"></i> Sisa
+                                            </span>
+                                        @endif
                                     </div>
 
                                     <div class="mt-3">
@@ -174,7 +179,7 @@
                                         </h3>
                                         <div class="d-flex align-items-center text-white text-opacity-75 mb-1"
                                             style="font-size: 0.8rem;">
-                                            Tagihan: Rp {{ number_format($totalTagihanGlobal, 0, ',', '.') }}
+                                            {{ $totalTagihanGlobal < 0 ? 'Tagihan' : 'Sisa' }}: Rp {{ number_format(abs($totalTagihanGlobal), 0, ',', '.') }}
                                         </div>
                                         <div class="d-flex align-items-center text-white font-bold"
                                             style="font-size: 0.85rem;">
