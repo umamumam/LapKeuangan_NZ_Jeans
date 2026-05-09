@@ -302,9 +302,27 @@ class SupplierTransactionController extends Controller
     public function destroy(SupplierTransaction $supplierTransaction)
     {
         try {
+            DB::beginTransaction();
+
+            $supplier = Supplier::find($supplierTransaction->supplier_id);
+            if ($supplier && $supplierTransaction->bayar > 0) {
+                // Hitung berapa bayar yang berasal dari pembayaran tidak terikat (otomatis)
+                // Pembayaran terikat akan terhapus otomatis oleh cascade delete
+                $linkedPaymentsTotal = $supplierTransaction->payments()->sum('nominal');
+                $unlinkedBayar = $supplierTransaction->bayar - $linkedPaymentsTotal;
+
+                if ($unlinkedBayar > 0) {
+                    // Kembalikan dana ke hutang_awal (mengurangi hutang) karena transaksinya dihapus
+                    $supplier->hutang_awal -= $unlinkedBayar;
+                    $supplier->save();
+                }
+            }
+
             $supplierTransaction->delete();
+            DB::commit();
             return redirect()->back()->with('success', 'Transaksi berhasil dihapus!');
         } catch (\Exception $e) {
+            DB::rollBack();
             return redirect()->back()->with('error', 'Gagal menghapus transaksi: ' . $e->getMessage());
         }
     }
@@ -339,30 +357,43 @@ class SupplierTransactionController extends Controller
 
         // 2. Jika masih ada sisa nominal, baru potong transaksi
         if ($nominal > 0) {
-            $debtTransactions = SupplierTransaction::where('supplier_id', $supplier->id)
-                ->where('total_tagihan', '<', 0)
+            $allTransactions = SupplierTransaction::where('supplier_id', $supplier->id)
                 ->orderBy('tgl', 'asc')
                 ->orderBy('id', 'asc')
                 ->get();
 
-            foreach ($debtTransactions as $trx) {
-                if ($nominal <= 0) {
-                    break;
+            if ($allTransactions->isNotEmpty()) {
+                // First, pay all debts
+                foreach ($allTransactions as $trx) {
+                    if ($nominal <= 0) break;
+                    if ($trx->total_tagihan < 0) {
+                        $hutang = abs($trx->total_tagihan);
+                        if ($nominal >= $hutang) {
+                            $trx->bayar += $hutang;
+                            $trx->total_tagihan = 0;
+                            $nominal -= $hutang;
+                        } else {
+                            $trx->bayar += $nominal;
+                            $trx->total_tagihan += $nominal;
+                            $nominal = 0;
+                        }
+                        $trx->save();
+                    }
                 }
 
-                $hutang = abs($trx->total_tagihan);
-
-                if ($nominal >= $hutang) {
-                    $trx->bayar += $hutang;
-                    $trx->total_tagihan = 0;
-                    $nominal -= $hutang;
-                } else {
-                    $trx->bayar += $nominal;
-                    $trx->total_tagihan += $nominal;
+                // If still nominal left, add surplus to the LATEST transaction
+                if ($nominal > 0) {
+                    $latestTrx = $allTransactions->sortByDesc('tgl')->sortByDesc('id')->first();
+                    $latestTrx->bayar += $nominal;
+                    $latestTrx->total_tagihan += $nominal;
+                    $latestTrx->save();
                     $nominal = 0;
                 }
-
-                $trx->save();
+            } else {
+                // No transactions at all, put it in hutang_awal (will become negative/surplus)
+                $supplier->hutang_awal -= $nominal;
+                $supplier->save();
+                $nominal = 0;
             }
         }
 
@@ -453,26 +484,43 @@ class SupplierTransactionController extends Controller
                     }
 
                     if ($nominalToApply > 0) {
-                        $debtTransactions = SupplierTransaction::where('supplier_id', $supplier->id)
-                            ->where('total_tagihan', '<', 0)
+                        $allTransactions = SupplierTransaction::where('supplier_id', $supplier->id)
                             ->orderBy('tgl', 'asc')
                             ->orderBy('id', 'asc')
                             ->get();
 
-                        foreach ($debtTransactions as $trx) {
-                            if ($nominalToApply <= 0) break;
+                        if ($allTransactions->isNotEmpty()) {
+                            // Pay all debts first
+                            foreach ($allTransactions as $trx) {
+                                if ($nominalToApply <= 0) break;
+                                if ($trx->total_tagihan < 0) {
+                                    $hutang = abs($trx->total_tagihan);
+                                    if ($nominalToApply >= $hutang) {
+                                        $trx->bayar += $hutang;
+                                        $trx->total_tagihan = 0;
+                                        $nominalToApply -= $hutang;
+                                    } else {
+                                        $trx->bayar += $nominalToApply;
+                                        $trx->total_tagihan += $nominalToApply;
+                                        $nominalToApply = 0;
+                                    }
+                                    $trx->save();
+                                }
+                            }
 
-                            $hutang = abs($trx->total_tagihan);
-                            if ($nominalToApply >= $hutang) {
-                                $trx->bayar += $hutang;
-                                $trx->total_tagihan = 0;
-                                $nominalToApply -= $hutang;
-                            } else {
-                                $trx->bayar += $nominalToApply;
-                                $trx->total_tagihan += $nominalToApply;
+                            // Surplus to latest transaction
+                            if ($nominalToApply > 0) {
+                                $latestTrx = $allTransactions->sortByDesc('tgl')->sortByDesc('id')->first();
+                                $latestTrx->bayar += $nominalToApply;
+                                $latestTrx->total_tagihan += $nominalToApply;
+                                $latestTrx->save();
                                 $nominalToApply = 0;
                             }
-                            $trx->save();
+                        } else {
+                            // No transactions, put in hutang_awal
+                            $supplier->hutang_awal -= $nominalToApply;
+                            $supplier->save();
+                            $nominalToApply = 0;
                         }
                     }
                 }
