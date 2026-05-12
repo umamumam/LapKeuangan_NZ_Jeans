@@ -186,6 +186,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/supplier-transactions/payment/{payment}', [SupplierTransactionController::class, 'updatePayment'])->name('supplier_transactions.update_payment');
     Route::delete('/supplier-transactions/payment/{payment}', [SupplierTransactionController::class, 'destroyPayment'])->name('supplier_transactions.destroy_payment');
     Route::get('/supplier-transactions/supplier/{supplier}', [SupplierTransactionController::class, 'supplierShow'])->name('supplier_transactions.show_supplier');
+    Route::get('/supplier-transactions/supplier/{supplier}/invoice', [SupplierTransactionController::class, 'invoice'])->name('supplier_transactions.invoice');
     Route::resource('supplier_transactions', SupplierTransactionController::class);
     Route::resource('penarikan_omset', PenarikanOmsetController::class);
     Route::resource('karyawan', KaryawanController::class);

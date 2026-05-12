@@ -4,7 +4,7 @@
             <!-- Filter Section -->
             <div class="card shadow-sm border-0 mb-4 no-print">
                 <div class="card-body">
-                    <form action="{{ route('reseller_transactions.invoice', $reseller->id) }}" method="GET"
+                    <form action="{{ route('supplier_transactions.invoice', $supplier->id) }}" method="GET"
                         class="row g-3 align-items-end">
                         <div class="col-md-3">
                             <label class="form-label fw-bold">Dari Tanggal</label>
@@ -24,20 +24,20 @@
                             @php
                             $totalRunning = $prevBalance;
                             if(isset($items)) {
-                            foreach($items as $item) {
-                            $totalRunning += ($item->tagihan - $item->bayar);
-                            }
+                                foreach($items as $item) {
+                                    $totalRunning += ($item->tagihan - $item->bayar);
+                                }
                             }
 
                             $waMessage = "Invoice Transaksi NZ Jeans\n" .
-                            "Reseller: " . $reseller->nama . "\n" .
+                            "Supplier: " . $supplier->nama . "\n" .
                             "Periode: " . date('d/m/Y', strtotime($startDate)) . " - " . date('d/m/Y', strtotime($endDate)) . "\n\n" .
                             ($totalRunning < 0 ? "Kelebihan Bayar" : "Total Tagihan") . ": Rp. " . number_format(abs($totalRunning), 0, ',', '.') . "\n\n" .
                             "Terima kasih";
 
-                            $waPhone = $reseller->telepon ? preg_replace('/[^0-9]/', '', $reseller->telepon) : '';
+                            $waPhone = $supplier->telepon ? preg_replace('/[^0-9]/', '', $supplier->telepon) : '';
                             if($waPhone && !str_starts_with($waPhone, '62') && str_starts_with($waPhone, '0')) {
-                            $waPhone = '62' . substr($waPhone, 1);
+                                $waPhone = '62' . substr($waPhone, 1);
                             }
                             @endphp
                             @if($waPhone)
@@ -69,12 +69,12 @@
                         <div class="d-flex justify-content-center align-items-center mb-2">
                             <h2 class="fw-bold text-uppercase mb-0"
                                 style="letter-spacing: 2px; border-bottom: 3px solid #333; display: inline-block; padding-bottom: 5px;">
-                                RESELLER {{ $reseller->nama }}
+                                SUPPLIER {{ $supplier->nama }}
                             </h2>
                         </div>
-                        @if($reseller->telepon)
+                        @if($supplier->telepon)
                         <div class="mt-2 text-muted fw-bold">
-                            <i class="fas fa-phone-alt me-1"></i> {{ $reseller->telepon }}
+                            <i class="fas fa-phone-alt me-1"></i> {{ $supplier->telepon }}
                         </div>
                         @endif
                     </div>
@@ -102,7 +102,7 @@
                                         UKURAN</th>
                                     <th colspan="4" class="text-center"
                                         style="border: 1px solid #333 !important; padding: 8px !important;">Harga
-                                        Jual</th>
+                                        Beli</th>
                                     <th rowspan="2" class="align-middle"
                                         style="width: 130px; border: 1px solid #333 !important; padding: 12px 5px !important; line-height: 1.2;">
                                         JUMLAH<br>BAYAR</th>
@@ -124,7 +124,7 @@
                             <tbody>
                                 <!-- Previous Balance Row -->
                                 <tr class="fw-bold" style="background-color: #fefefe;">
-                                    <td style="border: 1px solid #333 !important;"></td> {{-- Tanggal Kosong --}}
+                                    <td style="border: 1px solid #333 !important;"></td>
                                     <td colspan="6" class="text-center text-uppercase"
                                         style="border: 1px solid #333 !important; letter-spacing: 2px;">TOTAL</td>
                                     <td class="text-center text-uppercase"
@@ -172,8 +172,8 @@
                                     <td style="border: 1px solid #333 !important;">{{ $sale->ukuran ?? '-' }}</td>
                                     @php
                                     $unitPrice = $sale->subtotal / ($sale->jumlah ?: 1);
-                                    $isLusin = $sale->hargajual_perlusin > 0 && round($unitPrice) ==
-                                    round($sale->hargajual_perlusin);
+                                    $isLusin = $sale->hargabeli_perlusin > 0 && round($unitPrice) ==
+                                    round($sale->hargabeli_perlusin);
                                     @endphp
                                     <td class="text-end"
                                         style="border: 1px solid #333 !important; padding: 5px !important;">
@@ -272,28 +272,6 @@
                                     </td>
                                 </tr>
                                 @endforeach
-
-                                {{-- Render Total Row only on Fridays --}}
-                                @if(date('N', strtotime($item->tgl)) == 5)
-                                <tr class="fw-bold" style="background-color: #f8f9fa;">
-                                    <td style="border: 1px solid #333 !important;"></td> {{-- Tanggal Kosong --}}
-                                    <td colspan="7" class="text-center text-uppercase"
-                                        style="border: 1px solid #333 !important; letter-spacing: 2px;">TOTAL</td>
-                                    <td class="text-end"
-                                        style="border: 1px solid #333 !important; padding: 5px !important;">
-                                        <table style="width: 100%; border: none !important; background: transparent;">
-                                            <tr style="border: none !important;">
-                                                <td
-                                                    style="text-align: left; border: none !important; padding: 0 !important; font-weight: bold;">
-                                                    IDR</td>
-                                                <td
-                                                    style="text-align: right; border: none !important; padding: 0 !important; font-weight: bold;">
-                                                    {{ number_format($runningBalance, 0, ',', '.') }}</td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                </tr>
-                                @endif
                                 @endforeach
 
                                 <!-- Footer Total -->
@@ -339,7 +317,6 @@
                             </tbody>
                         </table>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -353,7 +330,6 @@
         }
 
         @media print {
-
             .no-print,
             .pc-sidebar,
             .pc-header,
@@ -421,7 +397,7 @@
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
-                    link.download = `Invoice_NZ_{{ $reseller->nama }}_{{ date('Ymd_His') }}.png`;
+                    link.download = `Invoice_NZ_Supplier_{{ $supplier->nama }}_{{ date('Ymd_His') }}.png`;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
@@ -442,10 +418,8 @@
                         if (result.isConfirmed) {
                             let waUrl = '';
                             if (type === 'group') {
-                                // Link untuk share ke grup/pilih kontak
                                 waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(waMessage)}`;
                             } else {
-                                // Link untuk chat pribadi ke nomor reseller
                                 waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(waMessage)}`;
                             }
                             window.open(waUrl, '_blank');

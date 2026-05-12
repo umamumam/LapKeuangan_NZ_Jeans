@@ -560,4 +560,70 @@ class SupplierTransactionController extends Controller
             return redirect()->back()->with('error', 'Gagal menghapus pembayaran: ' . $e->getMessage());
         }
     }
+
+    public function invoice(Request $request, Supplier $supplier)
+    {
+        $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->toDateString());
+        $endDate = $request->input('end_date', Carbon::now()->toDateString());
+
+        // 1. Calculate Previous Balance
+        $allSalesBefore = SupplierTransaction::where('supplier_id', $supplier->id)
+            ->where('tgl', '<', $startDate)
+            ->sum('total_uang');
+
+        $allPaymentsBefore = SupplierPayment::where('supplier_id', $supplier->id)
+            ->where('tgl', '<', $startDate)
+            ->sum('nominal');
+
+        $prevBalance = $supplier->hutang_awal + $allSalesBefore - $allPaymentsBefore;
+
+        // 2. Fetch Line Items (Sales)
+        $details = SupplierTransactionDetail::join('supplier_transactions', 'supplier_transaction_details.supplier_transaction_id', '=', 'supplier_transactions.id')
+            ->join('barangs', 'supplier_transaction_details.barang_id', '=', 'barangs.id')
+            ->where('supplier_transactions.supplier_id', $supplier->id)
+            ->whereBetween('supplier_transactions.tgl', [$startDate, $endDate])
+            ->select(
+                'supplier_transactions.tgl',
+                'barangs.namabarang',
+                'barangs.ukuran',
+                'barangs.hargabeli_perlusin',
+                'supplier_transaction_details.jumlah',
+                'supplier_transaction_details.subtotal',
+                DB::raw("'sale' as type")
+            )
+            ->get();
+
+        // 3. Fetch Payments
+        $payments = SupplierPayment::where('supplier_id', $supplier->id)
+            ->whereBetween('tgl', [$startDate, $endDate])
+            ->select(
+                'tgl',
+                'nominal as subtotal',
+                DB::raw("'payment' as type")
+            )
+            ->get();
+
+        // 4. Merge and Group by Date
+        $merged = $details->concat($payments);
+        
+        $grouped = $merged->groupBy(function($item) {
+            return date('Y-m-d', strtotime($item->tgl));
+        })->sortKeys();
+
+        $items = [];
+        foreach ($grouped as $date => $dayItems) {
+            $sales = $dayItems->where('type', 'sale')->values();
+            $pay = $dayItems->where('type', 'payment')->values();
+
+            $items[] = (object)[
+                'tgl' => $date,
+                'sales_details' => $sales,
+                'payments' => $pay,
+                'tagihan' => $sales->sum('subtotal'),
+                'bayar' => $pay->sum('subtotal'),
+            ];
+        }
+
+        return view('supplier_transactions.invoice', compact('supplier', 'items', 'prevBalance', 'startDate', 'endDate'));
+    }
 }

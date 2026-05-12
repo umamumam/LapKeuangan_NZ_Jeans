@@ -118,6 +118,10 @@
                                     class="btn btn-primary btn-sm shadow-sm">
                                     <i class="fas fa-plus"></i> Tambah Transaksi
                                 </a>
+                                <a href="{{ route('supplier_transactions.invoice', $supplier->id) }}"
+                                    class="btn btn-info btn-sm shadow-sm text-white">
+                                    <i class="fas fa-file-invoice"></i> Cetak Invoice
+                                </a>
                             </div>
                         </div>
                     </div>
