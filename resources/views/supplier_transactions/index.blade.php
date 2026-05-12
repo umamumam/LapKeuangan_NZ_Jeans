@@ -175,6 +175,18 @@
                                                 <i class="fas fa-boxes me-1 text-white text-opacity-75"></i> Produk
                                                 dari Supplier ({{ $supplier->barangs->count() }})
                                             </div>
+                                            @php
+                                                $lastUpdate = collect([
+                                                    $supplier->updated_at,
+                                                    $supplier->transactions_max_updated_at,
+                                                    $supplier->payments_max_updated_at
+                                                ])->filter()->max();
+                                            @endphp
+                                            @if($lastUpdate)
+                                                <div style="font-size: 0.65rem; color: rgba(255,255,255,0.7);" class="fw-light">
+                                                    <i class="fas fa-clock me-1"></i> Update: {{ \Carbon\Carbon::parse($lastUpdate)->diffForHumans() }}
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
