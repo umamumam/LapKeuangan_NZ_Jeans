@@ -90,34 +90,34 @@
                         <table class="table table-bordered align-middle text-center"
                             style="border: 2px solid #333 !important;">
                             <thead style="background-color: #f8f9fa;">
-                                <tr style="border-bottom: 2px solid #333 !important;">
+                                <tr>
                                     <th rowspan="2" class="align-middle"
-                                        style="width: 100px; border: 1px solid #333 !important; padding: 12px 5px !important;">
+                                        style="width: 100px; padding: 12px 5px !important;">
                                         Tanggal</th>
                                     <th rowspan="2" class="align-middle"
-                                        style="border: 1px solid #333 !important; padding: 12px 5px !important;">
+                                        style="padding: 12px 5px !important;">
                                         Jenis Barang</th>
                                     <th rowspan="2" class="align-middle"
-                                        style="width: 80px; border: 1px solid #333 !important; padding: 12px 5px !important;">
+                                        style="width: 80px; padding: 12px 5px !important;">
                                         UKURAN</th>
                                     <th colspan="4" class="text-center"
-                                        style="border: 1px solid #333 !important; padding: 8px !important;">Harga
+                                        style="padding: 8px !important;">Harga
                                         Jual</th>
                                     <th rowspan="2" class="align-middle"
-                                        style="width: 130px; border: 1px solid #333 !important; padding: 12px 5px !important; line-height: 1.2;">
+                                        style="width: 130px; padding: 12px 5px !important; line-height: 1.2;">
                                         JUMLAH<br>BAYAR</th>
                                     <th rowspan="2" class="align-middle"
-                                        style="width: 160px; border: 1px solid #333 !important; padding: 12px 5px !important; line-height: 1.2;">
+                                        style="width: 160px; padding: 12px 5px !important; line-height: 1.2;">
                                         TOTAL<br>HUTANG</th>
                                 </tr>
-                                <tr style="border-bottom: 2px solid #333 !important;">
-                                    <th style="border: 1px solid #333 !important; padding: 8px 5px !important;">Harga
+                                <tr>
+                                    <th style="padding: 8px 5px !important;">Harga
                                         Satuan</th>
-                                    <th style="border: 1px solid #333 !important; padding: 8px 5px !important;">Perlusin
+                                    <th style="padding: 8px 5px !important;">Perlusin
                                     </th>
-                                    <th style="border: 1px solid #333 !important; padding: 8px 5px !important;">
+                                    <th style="padding: 8px 5px !important;">
                                         Perpotong</th>
-                                    <th style="border: 1px solid #333 !important; padding: 8px 5px !important;">Jumlah
+                                    <th style="padding: 8px 5px !important;">Jumlah
                                     </th>
                                 </tr>
                             </thead>
@@ -160,23 +160,23 @@
                                 $runningBalance += $sale->subtotal;
                                 $currentRow++;
                                 @endphp
-                                <tr style="border-bottom: 1px solid #333 !important;">
+                                <tr class="row-data">
                                     @if($currentRow === 1)
-                                    <td rowspan="{{ $totalDayRows }}" style="border: 1px solid #333 !important;">
+                                    <td rowspan="{{ $totalDayRows }}" class="text-center merged-cell">
                                         {{ date('d/m/Y', strtotime($item->tgl)) }}
                                     </td>
                                     @endif
 
-                                    <td class="text-start" style="border: 1px solid #333 !important;">{{
+                                    <td class="text-start">{{
                                         $sale->namabarang }}</td>
-                                    <td style="border: 1px solid #333 !important;">{{ $sale->ukuran ?? '-' }}</td>
+                                    <td>{{ $sale->ukuran ?? '-' }}</td>
                                     @php
                                     $unitPrice = $sale->subtotal / ($sale->jumlah ?: 1);
                                     $isLusin = $sale->hargajual_perlusin > 0 && round($unitPrice) ==
                                     round($sale->hargajual_perlusin);
                                     @endphp
                                     <td class="text-end"
-                                        style="border: 1px solid #333 !important; padding: 5px !important;">
+                                        style="padding: 5px !important;">
                                         <table style="width: 100%; border: none !important; background: transparent;">
                                             <tr style="border: none !important;">
                                                 <td
@@ -188,14 +188,14 @@
                                             </tr>
                                         </table>
                                     </td>
-                                    <td style="border: 1px solid #333 !important;">
+                                    <td>
                                         {{ $isLusin ? $sale->jumlah : '' }}
                                     </td> {{-- Perlusin --}}
-                                    <td style="border: 1px solid #333 !important;">
+                                    <td>
                                         {{ !$isLusin ? $sale->jumlah : '' }}
                                     </td> {{-- Perpotong --}}
                                     <td class="text-end"
-                                        style="border: 1px solid #333 !important; padding: 5px !important;">
+                                        style="padding: 5px !important;">
                                         <table style="width: 100%; border: none !important; background: transparent;">
                                             <tr style="border: none !important;">
                                                 <td
@@ -207,9 +207,9 @@
                                             </tr>
                                         </table>
                                     </td>
-                                    <td class="text-end" style="border: 1px solid #333 !important;">-</td>
+                                    <td class="text-end">-</td>
                                     <td class="text-end fw-bold"
-                                        style="border: 1px solid #333 !important; padding: 5px !important;">
+                                        style="padding: 5px !important;">
                                         <table style="width: 100%; border: none !important; background: transparent;">
                                             <tr style="border: none !important;">
                                                 <td
@@ -230,22 +230,22 @@
                                 $runningBalance -= $pay->subtotal;
                                 $currentRow++;
                                 @endphp
-                                <tr style="border-bottom: 1px solid #333 !important; background-color: #f0fdf4;">
+                                <tr class="row-data" style="background-color: #f0fdf4;">
                                     @if($currentRow === 1)
-                                    <td rowspan="{{ $totalDayRows }}" style="border: 1px solid #333 !important;">
+                                    <td rowspan="{{ $totalDayRows }}" class="text-center merged-cell">
                                         {{ date('d/m/Y', strtotime($item->tgl)) }}
                                     </td>
                                     @endif
 
-                                    <td class="text-start fw-bold" style="border: 1px solid #333 !important;">PEMBAYARAN
+                                    <td class="text-start fw-bold">PEMBAYARAN
                                     </td>
-                                    <td style="border: 1px solid #333 !important;">-</td>
-                                    <td style="border: 1px solid #333 !important;">-</td>
-                                    <td style="border: 1px solid #333 !important;">-</td>
-                                    <td style="border: 1px solid #333 !important;">-</td>
-                                    <td style="border: 1px solid #333 !important;">-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
                                     <td class="text-end fw-bold text-success"
-                                        style="border: 1px solid #333 !important; padding: 5px !important;">
+                                        style="padding: 5px !important;">
                                         <table style="width: 100%; border: none !important; background: transparent;">
                                             <tr style="border: none !important;">
                                                 <td
@@ -258,7 +258,7 @@
                                         </table>
                                     </td>
                                     <td class="text-end fw-bold"
-                                        style="border: 1px solid #333 !important; padding: 5px !important;">
+                                        style="padding: 5px !important;">
                                         <table style="width: 100%; border: none !important; background: transparent;">
                                             <tr style="border: none !important;">
                                                 <td
@@ -298,9 +298,9 @@
 
                                 <!-- Footer Total -->
                                 <tr class="fw-bold"
-                                    style="background-color: #fefefe; border-top: 2px solid #333 !important;">
+                                    style="background-color: #fefefe;">
                                     <td colspan="8" class="text-end text-uppercase"
-                                        style="border: 1px solid #333 !important; letter-spacing: 1px;">TOTAL HUTANG
+                                        style="letter-spacing: 1px;">TOTAL HUTANG
                                         SAAT INI</td>
                                     <td class="text-end text-danger"
                                         style="border: 1px solid #333 !important; font-size: 1.1rem; padding: 5px !important;">
@@ -349,7 +349,18 @@
         .invoice-print-area td,
         .invoice-print-area th {
             padding: 8px !important;
-            border-color: #333 !important;
+            border: 1px solid #333 !important;
+            background-color: transparent !important;
+            vertical-align: middle;
+        }
+
+        .invoice-print-area .merged-cell {
+            vertical-align: top !important;
+            padding-top: 15px !important;
+        }
+
+        .invoice-print-area tr {
+            border: none !important;
         }
 
         @media print {
