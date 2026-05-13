@@ -332,6 +332,31 @@ class ResellerTransactionController extends Controller
                 'bukti_tf' => $buktiTfPath,
             ]);
 
+            // Update or create payment record for the ledger
+            $payment = ResellerPayment::where('reseller_transaction_id', $resellerTransaction->id)->first();
+            if ($request->bayar > 0) {
+                if ($payment) {
+                    $payment->update([
+                        'tgl' => $request->tgl,
+                        'nominal' => $request->bayar,
+                        'bukti_tf' => $buktiTfPath,
+                    ]);
+                } else {
+                    ResellerPayment::create([
+                        'reseller_id' => $request->reseller_id,
+                        'reseller_transaction_id' => $resellerTransaction->id,
+                        'tgl' => $request->tgl,
+                        'nominal' => $request->bayar,
+                        'bukti_tf' => $buktiTfPath,
+                        'keterangan' => 'Pembayaran Awal Transaksi',
+                    ]);
+                }
+            } else {
+                if ($payment) {
+                    $payment->delete();
+                }
+            }
+
             DB::commit();
 
             return redirect()->route('reseller_transactions.show_reseller', $resellerTransaction->reseller_id)->with('success', 'Transaksi reseller berhasil diubah!');
@@ -345,7 +370,25 @@ class ResellerTransactionController extends Controller
     {
         try {
             DB::beginTransaction();
+
+            // Delete associated details first
+            ResellerTransactionDetail::where('reseller_transaction_id', $resellerTransaction->id)->delete();
+
+            // Delete associated payment if it exists
+            $payment = ResellerPayment::where('reseller_transaction_id', $resellerTransaction->id)->first();
+            if ($payment) {
+                if ($payment->bukti_tf) {
+                    Storage::disk('public')->delete($payment->bukti_tf);
+                }
+                $payment->delete();
+            }
+
+            // Delete the transaction itself
+            if ($resellerTransaction->bukti_tf) {
+                Storage::disk('public')->delete($resellerTransaction->bukti_tf);
+            }
             $resellerTransaction->delete();
+
             DB::commit();
             return redirect()->back()->with('success', 'Transaksi berhasil dihapus!');
         } catch (\Exception $e) {

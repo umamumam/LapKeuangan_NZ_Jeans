@@ -292,6 +292,31 @@ class SupplierTransactionController extends Controller
                 'bukti_tf' => $buktiTfPath,
             ]);
 
+            // Update or create payment record for the ledger
+            $payment = SupplierPayment::where('supplier_transaction_id', $supplierTransaction->id)->first();
+            if ($request->bayar > 0) {
+                if ($payment) {
+                    $payment->update([
+                        'tgl' => $request->tgl,
+                        'nominal' => $request->bayar,
+                        'bukti_tf' => $buktiTfPath,
+                    ]);
+                } else {
+                    SupplierPayment::create([
+                        'supplier_id' => $request->supplier_id,
+                        'supplier_transaction_id' => $supplierTransaction->id,
+                        'tgl' => $request->tgl,
+                        'nominal' => $request->bayar,
+                        'bukti_tf' => $buktiTfPath,
+                        'keterangan' => 'Pembayaran Awal Transaksi',
+                    ]);
+                }
+            } else {
+                if ($payment) {
+                    $payment->delete();
+                }
+            }
+
             DB::commit();
 
             return redirect()->route('supplier_transactions.show_supplier', $supplierTransaction->supplier_id)->with('success', 'Transaksi supplier berhasil diubah!');
@@ -305,7 +330,25 @@ class SupplierTransactionController extends Controller
     {
         try {
             DB::beginTransaction();
+
+            // Delete associated details first
+            SupplierTransactionDetail::where('supplier_transaction_id', $supplierTransaction->id)->delete();
+
+            // Delete associated payment if it exists
+            $payment = SupplierPayment::where('supplier_transaction_id', $supplierTransaction->id)->first();
+            if ($payment) {
+                if ($payment->bukti_tf) {
+                    Storage::disk('public')->delete($payment->bukti_tf);
+                }
+                $payment->delete();
+            }
+
+            // Delete the transaction itself
+            if ($supplierTransaction->bukti_tf) {
+                Storage::disk('public')->delete($supplierTransaction->bukti_tf);
+            }
             $supplierTransaction->delete();
+
             DB::commit();
             return redirect()->back()->with('success', 'Transaksi berhasil dihapus!');
         } catch (\Exception $e) {
