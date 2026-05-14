@@ -67,6 +67,33 @@
                                     @endforeach
                                 </tr>
                             </tbody>
+                        <hr class="my-5">
+                        <h5 class="mb-4 text-primary"><i class="fas fa-truck-moving me-2"></i> Rincian Per Nama Supplier (Total Tahun {{ $tahun }})</h5>
+                        <table class="table table-hover table-bordered align-middle" id="supplierDetailTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="text-center" style="width: 50px;">#</th>
+                                    <th>Nama Supplier</th>
+                                    <th class="text-center">Total Lusin</th>
+                                    <th class="text-center">Total Potong</th>
+                                    <th class="text-end">Total Pembelian</th>
+                                    <th class="text-end">Total Bayar</th>
+                                    <th class="text-end">Sisa Hutang</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($supplierData as $sd)
+                                <tr>
+                                    <td class="text-center text-muted">{{ $loop->iteration }}</td>
+                                    <td class="fw-bold text-dark">{{ $sd->nama }}</td>
+                                    <td class="text-center">{{ floor($sd->total_barang / 12) }}</td>
+                                    <td class="text-center">{{ $sd->total_barang % 12 }}</td>
+                                    <td class="text-end fw-bold text-primary">Rp {{ number_format($sd->total_pembelian, 0, ',', '.') }}</td>
+                                    <td class="text-end">Rp {{ number_format($sd->total_bayar, 0, ',', '.') }}</td>
+                                    <td class="text-end text-danger fw-bold">Rp {{ number_format(abs($sd->total_hutang), 0, ',', '.') }}</td>
+                                </tr>
+                                @endforeach
+                            </tbody>
                         </table>
                     </div>
                 </div>

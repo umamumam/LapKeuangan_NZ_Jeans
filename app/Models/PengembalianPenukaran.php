@@ -13,6 +13,7 @@ class PengembalianPenukaran extends Model
         'tanggal',
         'jenis',
         'marketplace',
+        'toko_id',
         'resi_penerimaan',
         'resi_pengiriman',
         'pembayaran',
@@ -22,6 +23,11 @@ class PengembalianPenukaran extends Model
         'keterangan',
         'statusditerima',
     ];
+
+    public function toko()
+    {
+        return $this->belongsTo(Toko::class);
+    }
 
     protected $casts = [
         'tanggal' => 'date',

@@ -54,4 +54,9 @@ class Toko extends Model
     {
         return $this->hasMany(PenarikanOmset::class);
     }
+
+    public function pengembalianPenukarans(): HasMany
+    {
+        return $this->hasMany(PengembalianPenukaran::class);
+    }
 }

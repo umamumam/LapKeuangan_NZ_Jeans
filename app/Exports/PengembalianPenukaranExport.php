@@ -17,9 +17,10 @@ class PengembalianPenukaranExport implements FromCollection, WithHeadings, WithM
     protected $endDate;
     protected $jenis;
     protected $marketplace;
+    protected $tokoName;
     protected $status;
 
-    public function __construct($data, $startDate = null, $endDate = null, $jenis = null, $marketplace = null, $status = null)
+    public function __construct($data, $startDate = null, $endDate = null, $jenis = null, $marketplace = null, $status = null, $tokoName = null)
     {
         $this->data = $data;
         $this->startDate = $startDate;
@@ -27,6 +28,7 @@ class PengembalianPenukaranExport implements FromCollection, WithHeadings, WithM
         $this->jenis = $jenis;
         $this->marketplace = $marketplace;
         $this->status = $status;
+        $this->tokoName = $tokoName;
     }
 
     public function collection()
@@ -40,6 +42,7 @@ class PengembalianPenukaranExport implements FromCollection, WithHeadings, WithM
             'Tanggal',
             'Jenis',
             'Marketplace',
+            'Toko',
             'Resi Penerimaan',
             'Resi Pengiriman',
             'Pembayaran',
@@ -57,6 +60,7 @@ class PengembalianPenukaranExport implements FromCollection, WithHeadings, WithM
             $row->tanggal ? \Carbon\Carbon::parse($row->tanggal)->format('d/m/Y') : '',
             $row->jenis,
             $row->marketplace,
+            $row->toko->nama ?? '-',
             $row->resi_penerimaan,
             $row->resi_pengiriman,
             $row->pembayaran,
@@ -93,18 +97,22 @@ class PengembalianPenukaranExport implements FromCollection, WithHeadings, WithM
             $filterInfo[] = 'Marketplace: ' . $this->marketplace;
         }
 
+        if ($this->tokoName) {
+            $filterInfo[] = 'Toko: ' . $this->tokoName;
+        }
+
         $filterText = !empty($filterInfo) ? 'Data yang difilter: ' . implode(', ', $filterInfo) : 'Semua Data';
 
         // Tambahkan baris untuk info filter
         $sheet->insertNewRowBefore(1, 2);
-        $sheet->mergeCells('A1:K1');
+        $sheet->mergeCells('A1:L1');
         $sheet->setCellValue('A1', $filterText);
         $sheet->getStyle('A1')->getFont()->setBold(true);
         $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
 
         // Tambahkan jumlah data
         $sheet->setCellValue('A2', 'Total Data: ' . $this->data->count());
-        $sheet->mergeCells('A2:K2');
+        $sheet->mergeCells('A2:L2');
         $sheet->getStyle('A2')->getFont()->setBold(true);
         $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
 
