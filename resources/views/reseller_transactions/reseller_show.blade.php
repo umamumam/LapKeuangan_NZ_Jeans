@@ -252,7 +252,8 @@
                     <thead class="table-light">
                         <tr>
                             <th>Tanggal</th>
-                            <th>Qtty</th>
+                            <th class="text-center">Lusin</th>
+                            <th class="text-center">Potong</th>
                             <th>Retur</th>
                             <th>Total Harga</th>
                             {{-- <th>Bayar</th> --}}
@@ -265,7 +266,18 @@
                         @foreach($transactions as $trx)
                         <tr style="border-bottom: 1px solid #f8f9fa;">
                             <td><span class="fw-medium">{{ date('d M Y', strtotime($trx->tgl)) }}</span></td>
-                            <td>{{ $trx->total_barang }}</td>
+                            @php
+                                $sumLusin = 0;
+                                $sumPotong = 0;
+                                foreach($trx->details as $d) {
+                                    $unitPrice = $d->subtotal / ($d->jumlah ?: 1);
+                                    $isLusin = ($d->barang && $d->barang->hargajual_perlusin > 0 && round($unitPrice) == round($d->barang->hargajual_perlusin));
+                                    if($isLusin) $sumLusin += $d->jumlah;
+                                    else $sumPotong += $d->jumlah;
+                                }
+                            @endphp
+                            <td class="text-center">{{ $sumLusin ?: '-' }}</td>
+                            <td class="text-center">{{ $sumPotong ?: '-' }}</td>
                             <td class="text-muted">{{ $trx->retur }}</td>
                             <td class="fw-bold">Rp {{ number_format($trx->total_uang, 0, ',', '.') }}</td>
                             {{-- <td class="text-success fw-bold">Rp {{ number_format($trx->bayar, 0, ',', '.') }}</td>
@@ -323,7 +335,25 @@
                     </div>
                     <div>
                         <h6 class="fw-bold mb-0 text-dark">Rincian Barang</h6>
-                        <small class="text-muted">{{ $trx->total_barang }} Item Terjual</small>
+                        @php
+                            $sumLusinTrx = 0;
+                            $sumPotongTrx = 0;
+                            foreach($trx->details as $d) {
+                                $unitPrice = $d->subtotal / ($d->jumlah ?: 1);
+                                $isLusin = ($d->barang && $d->barang->hargajual_perlusin > 0 && round($unitPrice) == round($d->barang->hargajual_perlusin));
+                                if($isLusin) $sumLusinTrx += $d->jumlah;
+                                else $sumPotongTrx += $d->jumlah;
+                            }
+                        @endphp
+                        <small class="text-muted">
+                            @if($sumLusinTrx > 0)
+                                {{ $sumLusinTrx }} Lusin
+                            @endif
+                            @if($sumPotongTrx > 0)
+                                {{ $sumPotongTrx }} Potong
+                            @endif
+                            Terjual
+                        </small>
                     </div>
                 </div>
 
@@ -336,13 +366,18 @@
                                 <th class="py-2" style="width: 30%">Nama Produk</th>
                                 <th class="text-center py-2" style="width: 10%">Ukuran</th>
                                 <th class="py-2" style="width: 15%">Harga</th>
-                                <th class="text-center py-2" style="width: 10%">Qty</th>
-                                <th class="text-end py-2" style="width: 15%">Subtotal</th>
-                                <th class="text-end py-2 pe-3" style="width: 15%">Keuntungan</th>
+                                <th class="text-center py-2" style="width: 8%">Lusin</th>
+                                <th class="text-center py-2" style="width: 8%">Potong</th>
+                                <th class="text-end py-2" style="width: 12%">Subtotal</th>
+                                <th class="text-end py-2 pe-3" style="width: 12%">Keuntungan</th>
                             </tr>
                         </thead>
                         <tbody style="font-size: 0.85rem;">
                             @foreach($trx->details as $detail)
+                            @php
+                                $unitPrice = $detail->subtotal / ($detail->jumlah ?: 1);
+                                $isLusin = $detail->barang && $detail->barang->hargajual_perlusin > 0 && round($unitPrice) == round($detail->barang->hargajual_perlusin);
+                            @endphp
                             <tr>
                                 <td class="text-center text-muted py-2">{{ $loop->iteration }}</td>
                                 <td class="fw-medium text-dark py-2">{{ $detail->barang->namabarang ?? '-' }}</td>
@@ -352,9 +387,9 @@
                                         {{ $detail->barang->ukuran ?? '-' }}
                                     </span>
                                 </td>
-                                <td class="py-2">Rp {{ number_format($detail->subtotal / ($detail->jumlah ?: 1), 0,
-                                    ',', '.') }}</td>
-                                <td class="text-center fw-bold text-primary py-2">{{ $detail->jumlah }}</td>
+                                <td class="py-2">Rp {{ number_format($unitPrice, 0, ',', '.') }}</td>
+                                <td class="text-center fw-bold text-primary py-2">{{ $isLusin ? $detail->jumlah : '-' }}</td>
+                                <td class="text-center fw-bold text-primary py-2">{{ !$isLusin ? $detail->jumlah : '-' }}</td>
                                 <td class="text-end fw-bold text-dark py-2">Rp {{ number_format($detail->subtotal,
                                     0, ',', '.') }}</td>
                                 <td class="text-end fw-bold text-primary py-2 pe-3">Rp {{

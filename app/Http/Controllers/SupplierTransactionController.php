@@ -28,7 +28,8 @@ class SupplierTransactionController extends Controller
             ->get();
         // $suppliers = Supplier::with(['barangs'])->orderBy('nama')->get();
 
-        $allTransactions = SupplierTransaction::whereYear('tgl', $year)
+        $allTransactions = SupplierTransaction::with('details.barang')
+            ->whereYear('tgl', $year)
             ->whereMonth('tgl', $month)
             ->get();
 
@@ -64,6 +65,17 @@ class SupplierTransactionController extends Controller
             $trx = $allTransactions->where('supplier_id', $supplier->id);
             $supplier->total_uang = $trx->sum('total_uang');
             $supplier->bayar = $trx->sum('bayar');
+            
+            $supplier->total_lusin = 0;
+            $supplier->total_potong = 0;
+            foreach($trx as $t) {
+                foreach($t->details as $d) {
+                    $unitPrice = $d->subtotal / ($d->jumlah ?: 1);
+                    $isLusin = ($d->barang && $d->barang->hargabeli_perlusin > 0 && round($unitPrice) == round($d->barang->hargabeli_perlusin));
+                    if($isLusin) $supplier->total_lusin += $d->jumlah;
+                    else $supplier->total_potong += $d->jumlah;
+                }
+            }
             
             // Global balance using ledger formula: Total Payments - Total Costs - Initial Debt
             $supplier->total_tagihan = ($supplier->payments_sum_nominal ?? 0) - ($supplier->transactions_sum_total_uang ?? 0) - $supplier->hutang_awal;

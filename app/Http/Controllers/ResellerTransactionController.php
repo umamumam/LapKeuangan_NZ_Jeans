@@ -32,7 +32,8 @@ class ResellerTransactionController extends Controller
             ->get();
         // $resellers = Reseller::with(['barangs'])->orderBy('nama')->get();
 
-        $allTransactions = ResellerTransaction::whereYear('tgl', $year)
+        $allTransactions = ResellerTransaction::with('details.barang')
+            ->whereYear('tgl', $year)
             ->whereMonth('tgl', $month)
             ->get();
 
@@ -69,6 +70,17 @@ class ResellerTransactionController extends Controller
             $trx = $allTransactions->where('reseller_id', $reseller->id);
             $reseller->total_uang = $trx->sum('total_uang');
             $reseller->bayar = $trx->sum('bayar');
+            
+            $reseller->total_lusin = 0;
+            $reseller->total_potong = 0;
+            foreach($trx as $t) {
+                foreach($t->details as $d) {
+                    $unitPrice = $d->subtotal / ($d->jumlah ?: 1);
+                    $isLusin = ($d->barang && $d->barang->hargajual_perlusin > 0 && round($unitPrice) == round($d->barang->hargajual_perlusin));
+                    if($isLusin) $reseller->total_lusin += $d->jumlah;
+                    else $reseller->total_potong += $d->jumlah;
+                }
+            }
             
             // Global balance using ledger formula: Total Payments - Total Costs - Initial Debt
             $reseller->sisa_kurang = ($reseller->payments_sum_nominal ?? 0) - ($reseller->transactions_sum_total_uang ?? 0) - $reseller->hutang_awal;

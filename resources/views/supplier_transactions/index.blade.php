@@ -215,6 +215,8 @@
                                     <tr>
                                         <th class="text-white" style="width: 50px;">#</th>
                                         <th class="text-white">Nama Supplier</th>
+                                        <th class="text-white text-center">Lusin</th>
+                                        <th class="text-white text-center">Potong</th>
                                         <th class="text-white">Total Belanja (Rp)</th>
                                         <th class="text-white">Sisa / Kurang (Rp)</th>
                                     </tr>
@@ -224,6 +226,8 @@
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
                                         <td class="fw-bold text-dark">{{ $rd->nama }}</td>
+                                        <td class="text-center">{{ $rd->total_lusin ?: '-' }}</td>
+                                        <td class="text-center">{{ $rd->total_potong ?: '-' }}</td>
                                         <td>Rp {{ number_format($rd->total_uang, 0, ',', '.') }}</td>
                                         <td class="text-danger fw-bold">
                                             - Rp {{ number_format(abs($rd->total_tagihan), 0, ',', '.') }}
