@@ -292,14 +292,15 @@ class OrderController extends Controller
         ]);
 
         try {
-            $periode = Periode::findOrFail($request->periode_id);
+            $periode = Periode::with('toko')->findOrFail($request->periode_id);
             $orderCount = Order::where('periode_id', $request->periode_id)->count();
+            $tokoNama = $periode->toko?->nama ?? 'Tanpa Toko';
 
             if ($orderCount === 0) {
                 // Return JSON untuk AJAX
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tidak ada data order pada periode ' . $periode->nama_periode
+                    'message' => 'Tidak ada data order pada periode ' . $periode->nama_periode . ' - ' . $tokoNama
                 ], 400);
             }
 
@@ -310,7 +311,7 @@ class OrderController extends Controller
             // Return JSON untuk AJAX
             return response()->json([
                 'success' => true,
-                'message' => "Berhasil menghapus {$orderCount} order dari periode {$periode->nama_periode}!"
+                'message' => "Berhasil menghapus {$orderCount} order dari periode {$periode->nama_periode} - {$tokoNama}!"
             ]);
 
         } catch (\Exception $e) {

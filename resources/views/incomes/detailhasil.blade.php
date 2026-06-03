@@ -33,7 +33,7 @@
                                                     request('periode_id')==$periode->id ? 'selected' : '' }}>
                                                     {{ $periode->nama_periode }}
                                                     @if($periode->toko)
-                                                    ({{ $periode->toko->nama }})
+                                                    ({{ $periode->toko?->nama ?? 'Tanpa Toko' }})
                                                     @endif
                                                 </option>
                                                 @endforeach
@@ -76,7 +76,7 @@
                                 Ditemukan' }}
                             </h6>
                             @if($periodeTerpilih && $periodeTerpilih->toko)
-                            <small class="text-muted">Toko: **{{ $periodeTerpilih->toko->nama }}**</small>
+                            <small class="text-muted">Toko: **{{ $periodeTerpilih->toko?->nama ?? 'Tanpa Toko' }}**</small>
                             @endif
                         </div>
 

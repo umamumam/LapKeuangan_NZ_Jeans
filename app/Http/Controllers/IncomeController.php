@@ -410,13 +410,14 @@ class IncomeController extends Controller
         ]);
 
         try {
-            $periode = Periode::findOrFail($request->periode_id);
+            $periode = Periode::with('toko')->findOrFail($request->periode_id);
             $incomeCount = Income::where('periode_id', $request->periode_id)->count();
+            $tokoNama = $periode->toko?->nama ?? 'Tanpa Toko';
 
             if ($incomeCount === 0) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tidak ada data income pada periode ' . $periode->nama_periode
+                    'message' => 'Tidak ada data income pada periode ' . $periode->nama_periode . ' - ' . $tokoNama
                 ], 400);
             }
 
@@ -426,7 +427,7 @@ class IncomeController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Berhasil menghapus {$incomeCount} income dari periode {$periode->nama_periode}!"
+                'message' => "Berhasil menghapus {$incomeCount} income dari periode {$periode->nama_periode} - {$tokoNama}!"
             ]);
 
         } catch (\Exception $e) {
