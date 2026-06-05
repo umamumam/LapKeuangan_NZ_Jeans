@@ -165,7 +165,12 @@ class ResellerTransactionController extends Controller
 
         $specificBarangs = Barang::where('reseller_id', $resellerId)->get();
 
-        if ($specificBarangs->isNotEmpty()) {
+        if (strcasecmp($reseller->nama, 'Totalan Cash') === 0) {
+            $barangs = Barang::whereNull('reseller_id')
+                ->whereNull('supplier_id')
+                ->orderBy('namabarang')
+                ->get();
+        } elseif ($specificBarangs->isNotEmpty()) {
             $barangs = $specificBarangs->sortBy('namabarang');
         } else {
             $barangs = Barang::whereNull('reseller_id')
@@ -269,7 +274,12 @@ class ResellerTransactionController extends Controller
 
         $specificBarangs = Barang::where('reseller_id', $reseller->id)->get();
 
-        if ($specificBarangs->isNotEmpty()) {
+        if (strcasecmp($reseller->nama, 'Totalan Cash') === 0) {
+            $barangs = Barang::whereNull('reseller_id')
+                ->whereNull('supplier_id')
+                ->orderBy('namabarang')
+                ->get();
+        } elseif ($specificBarangs->isNotEmpty()) {
             $barangs = $specificBarangs->sortBy('namabarang');
         } else {
             $barangs = Barang::whereNull('reseller_id')
