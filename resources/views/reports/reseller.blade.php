@@ -14,7 +14,7 @@
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label">Tahun</label>
                                     <select name="tahun" class="form-select">
-                                        @for ($y = date('Y') - 5; $y <= date('Y') + 1; $y++) <option value="{{ $y }}" {{
+                                        @for ($y = date('Y') - 1; $y <= date('Y') + 5; $y++) <option value="{{ $y }}" {{
                                             $tahun==$y ? 'selected' : '' }}>{{ $y }}</option>
                                             @endfor
                                     </select>
