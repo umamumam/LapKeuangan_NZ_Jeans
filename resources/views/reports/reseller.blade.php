@@ -75,6 +75,15 @@
                             </tbody>
                         <hr class="my-5">
                         <h5 class="mb-4 text-primary"><i class="fas fa-user-tag me-2"></i> Rincian Per Nama Reseller (Total Tahun {{ $tahun }})</h5>
+                        @php
+                            $grandTotalLusin = 0;
+                            $grandTotalPotong = 0;
+                            $grandTotalPenjualan = 0;
+                            $grandTotalHpp = 0;
+                            $grandTotalProfit = 0;
+                            $grandTotalBayar = 0;
+                            $grandTotalPiutang = 0;
+                        @endphp
                         <table class="table table-hover table-bordered align-middle" id="resellerDetailTable">
                             <thead class="table-dark">
                                 <tr>
@@ -82,6 +91,7 @@
                                     <th>Nama Reseller</th>
                                     <th class="text-center">Total Lusin</th>
                                     <th class="text-center">Total Potong</th>
+                                    <th class="text-end">Total HPP</th>
                                     <th class="text-end">Total Penjualan</th>
                                     <th class="text-end">Total Profit</th>
                                     <th class="text-end">Total Bayar</th>
@@ -90,11 +100,22 @@
                             </thead>
                             <tbody>
                                 @foreach($resellerData as $rd)
+                                @php
+                                    $hpp = $rd->total_penjualan - $rd->total_keuntungan;
+                                    $grandTotalLusin += $rd->total_lusin;
+                                    $grandTotalPotong += $rd->total_potong;
+                                    $grandTotalPenjualan += $rd->total_penjualan;
+                                    $grandTotalHpp += $hpp;
+                                    $grandTotalProfit += $rd->total_keuntungan;
+                                    $grandTotalBayar += $rd->total_bayar;
+                                    $grandTotalPiutang += abs($rd->total_piutang);
+                                @endphp
                                 <tr>
                                     <td class="text-center text-muted">{{ $loop->iteration }}</td>
                                     <td class="fw-bold text-dark">{{ $rd->nama }}</td>
-                                    <td class="text-center">{{ floor($rd->total_barang / 12) }}</td>
-                                    <td class="text-center">{{ $rd->total_barang % 12 }}</td>
+                                    <td class="text-center">{{ $rd->total_lusin ?: '-' }}</td>
+                                    <td class="text-center">{{ $rd->total_potong ?: '-' }}</td>
+                                    <td class="text-end text-muted">Rp {{ number_format($hpp, 0, ',', '.') }}</td>
                                     <td class="text-end fw-bold text-primary">Rp {{ number_format($rd->total_penjualan, 0, ',', '.') }}</td>
                                     <td class="text-end text-success">Rp {{ number_format($rd->total_keuntungan, 0, ',', '.') }}</td>
                                     <td class="text-end">Rp {{ number_format($rd->total_bayar, 0, ',', '.') }}</td>
@@ -102,6 +123,18 @@
                                 </tr>
                                 @endforeach
                             </tbody>
+                            <tfoot class="bg-white text-dark">
+                                <tr class="fw-bold">
+                                    <td colspan="2" class="text-center">Subtotal</td>
+                                    <td class="text-center">{{ $grandTotalLusin ?: '-' }}</td>
+                                    <td class="text-center">{{ $grandTotalPotong ?: '-' }}</td>
+                                    <td class="text-end">Rp {{ number_format($grandTotalHpp, 0, ',', '.') }}</td>
+                                    <td class="text-end">Rp {{ number_format($grandTotalPenjualan, 0, ',', '.') }}</td>
+                                    <td class="text-end">Rp {{ number_format($grandTotalProfit, 0, ',', '.') }}</td>
+                                    <td class="text-end">Rp {{ number_format($grandTotalBayar, 0, ',', '.') }}</td>
+                                    <td class="text-end text-danger">Rp {{ number_format($grandTotalPiutang, 0, ',', '.') }}</td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>

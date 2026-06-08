@@ -69,6 +69,13 @@
                             </tbody>
                         <hr class="my-5">
                         <h5 class="mb-4 text-primary"><i class="fas fa-truck-moving me-2"></i> Rincian Per Nama Supplier (Total Tahun {{ $tahun }})</h5>
+                        @php
+                            $grandTotalLusin = 0;
+                            $grandTotalPotong = 0;
+                            $grandTotalPembelian = 0;
+                            $grandTotalBayar = 0;
+                            $grandTotalHutang = 0;
+                        @endphp
                         <table class="table table-hover table-bordered align-middle" id="supplierDetailTable">
                             <thead class="table-dark">
                                 <tr>
@@ -83,17 +90,34 @@
                             </thead>
                             <tbody>
                                 @foreach($supplierData as $sd)
+                                @php
+                                    $grandTotalLusin += $sd->total_lusin;
+                                    $grandTotalPotong += $sd->total_potong;
+                                    $grandTotalPembelian += $sd->total_pembelian;
+                                    $grandTotalBayar += $sd->total_bayar;
+                                    $grandTotalHutang += abs($sd->total_hutang);
+                                @endphp
                                 <tr>
                                     <td class="text-center text-muted">{{ $loop->iteration }}</td>
                                     <td class="fw-bold text-dark">{{ $sd->nama }}</td>
-                                    <td class="text-center">{{ floor($sd->total_barang / 12) }}</td>
-                                    <td class="text-center">{{ $sd->total_barang % 12 }}</td>
+                                    <td class="text-center">{{ $sd->total_lusin ?: '-' }}</td>
+                                    <td class="text-center">{{ $sd->total_potong ?: '-' }}</td>
                                     <td class="text-end fw-bold text-primary">Rp {{ number_format($sd->total_pembelian, 0, ',', '.') }}</td>
                                     <td class="text-end">Rp {{ number_format($sd->total_bayar, 0, ',', '.') }}</td>
                                     <td class="text-end text-danger fw-bold">Rp {{ number_format(abs($sd->total_hutang), 0, ',', '.') }}</td>
                                 </tr>
                                 @endforeach
                             </tbody>
+                            <tfoot class="bg-white text-dark">
+                                <tr class="fw-bold">
+                                    <td colspan="2" class="text-center">Subtotal</td>
+                                    <td class="text-center">{{ $grandTotalLusin ?: '-' }}</td>
+                                    <td class="text-center">{{ $grandTotalPotong ?: '-' }}</td>
+                                    <td class="text-end">Rp {{ number_format($grandTotalPembelian, 0, ',', '.') }}</td>
+                                    <td class="text-end">Rp {{ number_format($grandTotalBayar, 0, ',', '.') }}</td>
+                                    <td class="text-end text-danger">Rp {{ number_format($grandTotalHutang, 0, ',', '.') }}</td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>
