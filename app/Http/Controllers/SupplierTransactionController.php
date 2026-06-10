@@ -81,9 +81,9 @@ class SupplierTransactionController extends Controller
             $supplier->total_tagihan = ($supplier->payments_sum_nominal ?? 0) - ($supplier->transactions_sum_total_uang ?? 0) - $supplier->hutang_awal;
         }
 
-        // Orang yang Sisa/Kurang < 0 (berhutang/tagihan)
+        // Orang yang Sisa/Kurang < 0 (berhutang/tagihan) atau memiliki transaksi/pembayaran di bulan ini
         $suppliersWithDebt = $suppliers->filter(function ($r) {
-            return $r->total_tagihan < 0;
+            return $r->total_uang > 0 || $r->bayar > 0 || $r->total_tagihan < 0;
         })->values();
 
         return view('supplier_transactions.index', compact('suppliers', 'rekapGlobal', 'suppliersWithDebt', 'month', 'year'));

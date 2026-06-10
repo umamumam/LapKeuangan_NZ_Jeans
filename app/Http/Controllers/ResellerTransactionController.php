@@ -87,9 +87,9 @@ class ResellerTransactionController extends Controller
             $reseller->total_keuntungan = $trx->sum('total_keuntungan');
         }
 
-        // Orang yang Sisa/Kurang < 0 (berhutang/tagihan)
+        // Orang yang Sisa/Kurang < 0 (berhutang/tagihan) atau memiliki transaksi/pembayaran di bulan ini
         $resellersWithDebt = $resellers->filter(function ($r) {
-            return $r->sisa_kurang < 0;
+            return $r->total_uang > 0 || $r->bayar > 0 || $r->sisa_kurang < 0;
         })->values();
 
         return view('reseller_transactions.index', compact('resellers', 'rekapGlobal', 'resellersWithDebt', 'month', 'year'));

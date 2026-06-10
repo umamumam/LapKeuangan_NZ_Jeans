@@ -217,45 +217,84 @@
                     <div class="card-header border-bottom bg-transparent pt-3 pb-2">
                         <h6 class="fw-bold mb-0 text-primary"><i class="fas fa-users-cog me-2"></i> Rincian Per Reseller
                             (Bulan {{ date('F Y', mktime(0, 0, 0, $month, 1)) }})</h6>
-                        <small class="text-muted">Daftar hutang/sisa pembayaran bulan ini.</small>
+                        <small class="text-muted">Daftar transaksi, keuntungan, dan sisa pembayaran bulan ini.</small>
                     </div>
                     <div class="card-body">
                         @if($resellersWithDebt->isEmpty())
                         <div class="alert alert-success d-flex align-items-center mb-0" role="alert">
                             <i class="fas fa-check-circle fs-4 me-3"></i>
-                            <div>Semua lunas bulan ini! Tidak ada tagihan tertunggak.</div>
+                            <div>Tidak ada aktivitas transaksi atau tagihan tertunggak bulan ini.</div>
                         </div>
                         @else
+                        @php
+                            $grandTotalLusin = 0;
+                            $grandTotalPotong = 0;
+                            $grandTotalHpp = 0;
+                            $grandTotalPenjualan = 0;
+                            $grandTotalProfit = 0;
+                            $grandTotalBayar = 0;
+                            $grandTotalPiutang = 0;
+                        @endphp
                         <div class="table-responsive">
                             <table class="table table-hover align-middle table-striped table-bordered mb-0">
-                                <thead class="table-primary text-white">
+                                <thead class="table-primary text-white text-center">
                                     <tr>
                                         <th class="text-white" style="width: 50px;">#</th>
-                                        <th class="text-white">Nama Reseller</th>
-                                        <th class="text-white text-center">Lusin</th>
-                                        <th class="text-white text-center">Potong</th>
-                                        <th class="text-white">Total Tagihan (Rp)</th>
-                                        <th class="text-white">Sisa / Kurang (Rp)</th>
-                                        <th class="text-white">Estimasi Profit (Rp)</th>
+                                        <th class="text-white text-start">Nama Reseller</th>
+                                        <th class="text-white">Total Lusin</th>
+                                        <th class="text-white">Total Potong</th>
+                                        <th class="text-white text-end">Total HPP</th>
+                                        <th class="text-white text-end">Total Penjualan</th>
+                                        <th class="text-white text-end">Total Profit</th>
+                                        <th class="text-white text-end">Total Bayar</th>
+                                        <th class="text-white text-end">Sisa Piutang</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($resellersWithDebt as $rd)
+                                    @php
+                                        $hpp = $rd->total_uang - $rd->total_keuntungan;
+                                        $grandTotalLusin += $rd->total_lusin;
+                                        $grandTotalPotong += $rd->total_potong;
+                                        $grandTotalHpp += $hpp;
+                                        $grandTotalPenjualan += $rd->total_uang;
+                                        $grandTotalProfit += $rd->total_keuntungan;
+                                        $grandTotalBayar += $rd->bayar;
+                                        if ($rd->sisa_kurang < 0) {
+                                            $grandTotalPiutang += abs($rd->sisa_kurang);
+                                        }
+                                    @endphp
                                     <tr>
-                                        <td>{{ $loop->iteration }}</td>
+                                        <td class="text-center text-muted">{{ $loop->iteration }}</td>
                                         <td class="fw-bold text-dark">{{ $rd->nama }}</td>
                                         <td class="text-center">{{ $rd->total_lusin ?: '-' }}</td>
                                         <td class="text-center">{{ $rd->total_potong ?: '-' }}</td>
-                                        <td>Rp {{ number_format($rd->total_uang, 0, ',', '.') }}</td>
-                                        <td class="text-danger fw-bold">
-                                            - Rp {{ number_format(abs($rd->sisa_kurang), 0, ',', '.') }}
-                                        </td>
-                                        <td class="text-primary fw-bold">
-                                            Rp {{ number_format($rd->total_keuntungan, 0, ',', '.') }}
+                                        <td class="text-end text-muted">Rp {{ number_format($hpp, 0, ',', '.') }}</td>
+                                        <td class="text-end fw-bold text-primary">Rp {{ number_format($rd->total_uang, 0, ',', '.') }}</td>
+                                        <td class="text-end text-success">Rp {{ number_format($rd->total_keuntungan, 0, ',', '.') }}</td>
+                                        <td class="text-end">Rp {{ number_format($rd->bayar, 0, ',', '.') }}</td>
+                                        <td class="text-end">
+                                            @if($rd->sisa_kurang < 0)
+                                                <span class="text-danger fw-bold">Rp {{ number_format(abs($rd->sisa_kurang), 0, ',', '.') }}</span>
+                                            @else
+                                                <span class="text-success fw-bold">Rp {{ number_format($rd->sisa_kurang, 0, ',', '.') }}</span>
+                                            @endif
                                         </td>
                                     </tr>
                                     @endforeach
                                 </tbody>
+                                <tfoot class="table-light text-dark fw-bold">
+                                    <tr>
+                                        <td colspan="2" class="text-center">Subtotal</td>
+                                        <td class="text-center">{{ $grandTotalLusin ?: '-' }}</td>
+                                        <td class="text-center">{{ $grandTotalPotong ?: '-' }}</td>
+                                        <td class="text-end">Rp {{ number_format($grandTotalHpp, 0, ',', '.') }}</td>
+                                        <td class="text-end text-primary">Rp {{ number_format($grandTotalPenjualan, 0, ',', '.') }}</td>
+                                        <td class="text-end text-success">Rp {{ number_format($grandTotalProfit, 0, ',', '.') }}</td>
+                                        <td class="text-end">Rp {{ number_format($grandTotalBayar, 0, ',', '.') }}</td>
+                                        <td class="text-end text-danger">Rp {{ number_format($grandTotalPiutang, 0, ',', '.') }}</td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                         @endif
