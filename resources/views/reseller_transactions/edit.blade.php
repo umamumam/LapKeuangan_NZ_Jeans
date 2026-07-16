@@ -4,7 +4,7 @@
             <div class="card shadow border-0" style="border-radius: 15px; overflow: hidden;">
                 <div class="card-header border-0 text-white d-flex justify-content-between align-items-center"
                     style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                    <h5 class="mb-0 text-white"><i class="fas fa-edit me-2"></i> Edit Transaksi Reseller</h5>
+                    <h5 class="mb-0 text-white"><i class="fas fa-edit me-2"></i> {{ $is_retur ? 'Edit Retur Reseller' : 'Edit Transaksi Reseller' }}</h5>
                     <div class="d-flex align-items-center gap-2">
                         <div id="priceModeIndicator" class="badge bg-white text-danger py-2 px-3 shadow-sm"
                             style="font-size: 0.85rem; border-radius: 20px; border: 1px solid #f5576c;">
@@ -21,6 +21,7 @@
                         enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
+                        <input type="hidden" name="is_retur" value="{{ $is_retur }}">
 
                         @if($errors->any())
                         <div class="alert alert-danger">
@@ -44,11 +45,15 @@
                                 <input type="date" name="tgl" class="form-control"
                                     value="{{ old('tgl', $resellerTransaction->tgl) }}" required>
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Retur (Potong)</label>
-                                <input type="number" name="retur" class="form-control"
-                                    value="{{ old('retur', $resellerTransaction->retur) }}" min="0">
-                            </div>
+                            @if($is_retur)
+                                <input type="hidden" name="retur" value="0">
+                            @else
+                                <div class="col-md-4">
+                                    <label class="form-label">Retur (Potong)</label>
+                                    <input type="number" name="retur" class="form-control"
+                                        value="{{ old('retur', $resellerTransaction->retur) }}" min="0">
+                                </div>
+                            @endif
                         </div>
 
                         <div class="row g-3 mb-4">
@@ -143,33 +148,37 @@
                                                 <i class="fas fa-plus"></i> Tambah Baris
                                             </button>
                                         </td>
-                                        <td class="text-end fw-bold align-middle border-start-0">Total Tagihan</td>
+                                        <td class="text-end fw-bold align-middle border-start-0">{{ $is_retur ? 'Total Retur' : 'Total Tagihan' }}</td>
                                         <td colspan="2">
                                             <input type="text" class="form-control fw-bold border-0 bg-transparent"
                                                 id="total_uang_display" readonly value="Rp 0">
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td colspan="2" class="border-end-0 border-top-0"></td>
-                                        <td class="text-end fw-bold align-middle">Bayar Nominal</td>
-                                        <td colspan="2">
-                                            <div class="input-group">
-                                                <input type="number" name="bayar" class="form-control fw-bold"
-                                                    id="bayar" value="{{ old('bayar', $resellerTransaction->bayar) }}"
-                                                    required min="0">
-                                                <button type="button" class="btn btn-secondary" id="btn-uang-pas"
-                                                    title="Uang Pas">Pas</button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="2" class="border-end-0 border-top-0"></td>
-                                        <td class="text-end fw-bold align-middle">Sisa / Kurang</td>
-                                        <td colspan="2">
-                                            <input type="text" class="form-control fw-bold border-0 bg-transparent"
-                                                id="sisa_kurang_display" readonly value="Rp 0">
-                                        </td>
-                                    </tr>
+                                    @if($is_retur)
+                                        <input type="hidden" name="bayar" id="bayar" value="0">
+                                    @else
+                                        <tr>
+                                            <td colspan="2" class="border-end-0 border-top-0"></td>
+                                            <td class="text-end fw-bold align-middle">Bayar Nominal</td>
+                                            <td colspan="2">
+                                                <div class="input-group">
+                                                    <input type="number" name="bayar" class="form-control fw-bold"
+                                                        id="bayar" value="{{ old('bayar', $resellerTransaction->bayar) }}"
+                                                        required min="0">
+                                                    <button type="button" class="btn btn-secondary" id="btn-uang-pas"
+                                                        title="Uang Pas">Pas</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" class="border-end-0 border-top-0"></td>
+                                            <td class="text-end fw-bold align-middle">Sisa / Kurang</td>
+                                            <td colspan="2">
+                                                <input type="text" class="form-control fw-bold border-0 bg-transparent"
+                                                    id="sisa_kurang_display" readonly value="Rp 0">
+                                            </td>
+                                        </tr>
+                                    @endif
                                 </tfoot>
                             </table>
                         </div>
@@ -302,28 +311,32 @@
                 
                 totalDisplay.value = formatRupiah(total);
                 
-                const bayar = parseFloat(bayarInput.value) || 0;
-                const sisa = bayar - total;
-                
-                sisaDisplay.value = (sisa < 0 ? '- ' : '') + formatRupiah(Math.abs(sisa));
-                
-                if (sisa > 0) {
-                    sisaDisplay.classList.add('text-success'); sisaDisplay.classList.remove('text-danger', 'text-secondary');
-                } else if (sisa < 0) {
-                    sisaDisplay.classList.add('text-danger'); sisaDisplay.classList.remove('text-success', 'text-secondary');
-                } else {
-                    sisaDisplay.classList.add('text-secondary'); sisaDisplay.classList.remove('text-success', 'text-danger');
+                if (sisaDisplay) {
+                    const bayar = parseFloat(bayarInput.value) || 0;
+                    const sisa = bayar - total;
+                    
+                    sisaDisplay.value = (sisa < 0 ? '- ' : '') + formatRupiah(Math.abs(sisa));
+                    
+                    if (sisa > 0) {
+                        sisaDisplay.classList.add('text-success'); sisaDisplay.classList.remove('text-danger', 'text-secondary');
+                    } else if (sisa < 0) {
+                        sisaDisplay.classList.add('text-danger'); sisaDisplay.classList.remove('text-success', 'text-secondary');
+                    } else {
+                        sisaDisplay.classList.add('text-secondary'); sisaDisplay.classList.remove('text-success', 'text-danger');
+                    }
                 }
             }
 
-            btnUangPas.addEventListener('click', function() {
-                let total = 0;
-                document.querySelectorAll('.subtotal-input').forEach(input => {
-                    total += parseFloat(input.value) || 0;
+            if (btnUangPas) {
+                btnUangPas.addEventListener('click', function() {
+                    let total = 0;
+                    document.querySelectorAll('.subtotal-input').forEach(input => {
+                        total += parseFloat(input.value) || 0;
+                    });
+                    bayarInput.value = total;
+                    calculateTotals();
                 });
-                bayarInput.value = total;
-                calculateTotals();
-            });
+            }
 
             function addRow() {
                 const tr = document.createElement('tr');

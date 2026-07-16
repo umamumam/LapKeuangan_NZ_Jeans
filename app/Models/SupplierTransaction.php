@@ -14,6 +14,7 @@ class SupplierTransaction extends Model
         'retur',
         'bayar',
         'total_tagihan',
+        'is_retur',
         'bukti_tf',
     ];
 

@@ -25,7 +25,7 @@
                             $totalRunning = $prevBalance;
                             if(isset($items)) {
                                 foreach($items as $item) {
-                                    $totalRunning += ($item->tagihan - $item->bayar);
+                                    $totalRunning += ($item->tagihan - $item->retur - $item->bayar);
                                 }
                             }
 
@@ -104,6 +104,9 @@
                                         style="padding: 8px !important;">Harga
                                         Beli</th>
                                     <th rowspan="2" class="align-middle"
+                                        style="width: 120px; padding: 12px 5px !important; line-height: 1.2;">
+                                        RETUR</th>
+                                    <th rowspan="2" class="align-middle"
                                         style="width: 130px; padding: 12px 5px !important; line-height: 1.2;">
                                         JUMLAH<br>BAYAR</th>
                                     <th rowspan="2" class="align-middle"
@@ -125,7 +128,7 @@
                                 <!-- Previous Balance Row -->
                                 <tr class="fw-bold" style="background-color: #fefefe;">
                                     <td style="border: 1px solid #333 !important;"></td>
-                                    <td colspan="6" class="text-center text-uppercase"
+                                    <td colspan="7" class="text-center text-uppercase"
                                         style="border: 1px solid #333 !important; letter-spacing: 2px;">TOTAL</td>
                                     <td class="text-center text-uppercase"
                                         style="border: 1px solid #333 !important; font-size: 0.85rem;">
@@ -157,7 +160,11 @@
                                 {{-- Render Sales --}}
                                 @foreach($sales as $index => $sale)
                                 @php
-                                $runningBalance += $sale->subtotal;
+                                if ($sale->is_retur) {
+                                    $runningBalance -= $sale->subtotal;
+                                } else {
+                                    $runningBalance += $sale->subtotal;
+                                }
                                 $currentRow++;
                                 @endphp
                                 <tr class="row-data">
@@ -196,16 +203,36 @@
                                     </td> {{-- Perpotong --}}
                                     <td class="text-end"
                                         style="padding: 5px !important;">
-                                        <table style="width: 100%; border: none !important; background: transparent;">
-                                            <tr style="border: none !important;">
-                                                <td
-                                                    style="text-align: left; border: none !important; padding: 0 !important;">
-                                                    IDR</td>
-                                                <td
-                                                    style="text-align: right; border: none !important; padding: 0 !important;">
-                                                    {{ number_format($sale->subtotal, 0, ',', '.') }}</td>
-                                            </tr>
-                                        </table>
+                                        @if($sale->is_retur)
+                                            -
+                                        @else
+                                            <table style="width: 100%; border: none !important; background: transparent;">
+                                                <tr style="border: none !important;">
+                                                    <td
+                                                        style="text-align: left; border: none !important; padding: 0 !important;">
+                                                        IDR</td>
+                                                    <td
+                                                        style="text-align: right; border: none !important; padding: 0 !important;">
+                                                        {{ number_format($sale->subtotal, 0, ',', '.') }}</td>
+                                                </tr>
+                                            </table>
+                                        @endif
+                                    </td>
+                                    <td class="text-end" style="padding: 5px !important;">
+                                        @if($sale->is_retur)
+                                            <table style="width: 100%; border: none !important; background: transparent;">
+                                                <tr style="border: none !important;">
+                                                    <td
+                                                        style="text-align: left; border: none !important; padding: 0 !important; color: inherit; font-weight: bold;">
+                                                        IDR</td>
+                                                    <td
+                                                        style="text-align: right; border: none !important; padding: 0 !important; color: inherit; font-weight: bold;">
+                                                        {{ number_format($sale->subtotal, 0, ',', '.') }}</td>
+                                                </tr>
+                                            </table>
+                                        @else
+                                            -
+                                        @endif
                                     </td>
                                     <td class="text-end">-</td>
                                     <td class="text-end fw-bold"
@@ -244,6 +271,7 @@
                                     <td>-</td>
                                     <td>-</td>
                                     <td>-</td>
+                                    <td>-</td>
                                     <td class="text-end fw-bold text-success"
                                         style="padding: 5px !important;">
                                         <table style="width: 100%; border: none !important; background: transparent;">
@@ -277,7 +305,7 @@
                                 <!-- Footer Total -->
                                 <tr class="fw-bold"
                                     style="background-color: #fefefe;">
-                                    <td colspan="8" class="text-end text-uppercase"
+                                    <td colspan="9" class="text-end text-uppercase"
                                         style="letter-spacing: 1px;">TOTAL HUTANG
                                         SAAT INI</td>
                                     <td class="text-end text-danger"

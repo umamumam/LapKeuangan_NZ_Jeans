@@ -21,7 +21,12 @@ class ResellerTransactionController extends Controller
 
         $resellers = Reseller::with(['barangs'])
             ->withSum('payments', 'nominal')
-            ->withSum('transactions', 'total_uang')
+            ->withSum(['transactions' => function($q) {
+                $q->where('is_retur', false);
+            }], 'total_uang')
+            ->withSum(['transactions as returns_sum_total_uang' => function($q) {
+                $q->where('is_retur', true);
+            }], 'total_uang')
             ->withMax('transactions', 'updated_at')
             ->withMax('payments', 'updated_at')
             ->orderByRaw('GREATEST(
@@ -60,20 +65,24 @@ class ResellerTransactionController extends Controller
                 $week = 'minggu_5';
             }
 
-            $rekapGlobal[$week]['total_uang'] += $trx->total_uang;
-            $rekapGlobal[$week]['bayar'] += $trx->bayar;
-            $rekapGlobal[$week]['sisa_kurang'] += $trx->sisa_kurang;
-            $rekapGlobal[$week]['total_keuntungan'] += $trx->total_keuntungan;
+            if ($trx->is_retur) {
+                $rekapGlobal[$week]['sisa_kurang'] += $trx->sisa_kurang;
+            } else {
+                $rekapGlobal[$week]['total_uang'] += $trx->total_uang;
+                $rekapGlobal[$week]['bayar'] += $trx->bayar;
+                $rekapGlobal[$week]['sisa_kurang'] += $trx->sisa_kurang;
+                $rekapGlobal[$week]['total_keuntungan'] += $trx->total_keuntungan;
+            }
         }
 
         foreach ($resellers as $reseller) {
             $trx = $allTransactions->where('reseller_id', $reseller->id);
-            $reseller->total_uang = $trx->sum('total_uang');
+            $reseller->total_uang = $trx->where('is_retur', false)->sum('total_uang');
             $reseller->bayar = $trx->sum('bayar');
             
             $reseller->total_lusin = 0;
             $reseller->total_potong = 0;
-            foreach($trx as $t) {
+            foreach($trx->where('is_retur', false) as $t) {
                 foreach($t->details as $d) {
                     $unitPrice = $d->subtotal / ($d->jumlah ?: 1);
                     $isLusin = ($d->barang && $d->barang->hargajual_perlusin > 0 && round($unitPrice) == round($d->barang->hargajual_perlusin));
@@ -82,9 +91,9 @@ class ResellerTransactionController extends Controller
                 }
             }
             
-            // Global balance using ledger formula: Total Payments - Total Costs - Initial Debt
-            $reseller->sisa_kurang = ($reseller->payments_sum_nominal ?? 0) - ($reseller->transactions_sum_total_uang ?? 0) - $reseller->hutang_awal;
-            $reseller->total_keuntungan = $trx->sum('total_keuntungan');
+            // Global balance using ledger formula: Total Payments - Total Costs + Total Returns - Initial Debt
+            $reseller->sisa_kurang = ($reseller->payments_sum_nominal ?? 0) - ($reseller->transactions_sum_total_uang ?? 0) + ($reseller->returns_sum_total_uang ?? 0) - $reseller->hutang_awal;
+            $reseller->total_keuntungan = $trx->where('is_retur', false)->sum('total_keuntungan');
         }
 
         // Orang yang Sisa/Kurang < 0 (berhutang/tagihan) atau memiliki transaksi/pembayaran di bulan ini
@@ -118,7 +127,7 @@ class ResellerTransactionController extends Controller
         $hasDebt = $reseller->hutang_awal > 0;
 
         foreach ($transactions as $trx) {
-            if ($trx->sisa_kurang < 0) {
+            if (!$trx->is_retur && $trx->sisa_kurang < 0) {
                 $hasDebt = true;
             }
 
@@ -135,10 +144,14 @@ class ResellerTransactionController extends Controller
                 $week = 'minggu_5';
             }
 
-            $rekap[$week]['total_uang'] += $trx->total_uang;
-            $rekap[$week]['bayar'] += $trx->bayar;
-            $rekap[$week]['sisa_kurang'] += $trx->sisa_kurang;
-            $rekap[$week]['total_keuntungan'] += $trx->total_keuntungan;
+            if ($trx->is_retur) {
+                $rekap[$week]['sisa_kurang'] += $trx->sisa_kurang;
+            } else {
+                $rekap[$week]['total_uang'] += $trx->total_uang;
+                $rekap[$week]['bayar'] += $trx->bayar;
+                $rekap[$week]['sisa_kurang'] += $trx->sisa_kurang;
+                $rekap[$week]['total_keuntungan'] += $trx->total_keuntungan;
+            }
         }
 
         $payments = \App\Models\ResellerPayment::where('reseller_id', $reseller->id)
@@ -148,7 +161,7 @@ class ResellerTransactionController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
-        $globalBalance = $reseller->payments()->sum('nominal') - $reseller->transactions()->sum('total_uang') - $reseller->hutang_awal;
+        $globalBalance = $reseller->payments()->sum('nominal') - $reseller->transactions()->where('is_retur', false)->sum('total_uang') + $reseller->transactions()->where('is_retur', true)->sum('total_uang') - $reseller->hutang_awal;
 
         return view('reseller_transactions.reseller_show', compact('reseller', 'transactions', 'rekap', 'month', 'year', 'hasDebt', 'payments', 'globalBalance'));
     }
@@ -156,6 +169,7 @@ class ResellerTransactionController extends Controller
     public function create(Request $request)
     {
         $resellerId = $request->query('reseller_id');
+        $is_retur = $request->query('is_retur', 0);
 
         if (!$resellerId) {
             return redirect()->route('reseller_transactions.index')->with('error', 'Silahkan pilih reseller terlebih dahulu.');
@@ -179,7 +193,7 @@ class ResellerTransactionController extends Controller
                 ->get();
         }
 
-        return view('reseller_transactions.create', compact('reseller', 'barangs'));
+        return view('reseller_transactions.create', compact('reseller', 'barangs', 'is_retur'));
     }
 
     public function store(Request $request)
@@ -189,6 +203,7 @@ class ResellerTransactionController extends Controller
             'tgl' => 'required|date',
             'bayar' => 'required|integer',
             'retur' => 'nullable|integer',
+            'is_retur' => 'nullable|boolean',
             'details' => 'required|array|min:1',
             'details.*.barang_id' => 'required|exists:barangs,id',
             'details.*.jumlah' => 'required|integer|min:1',
@@ -218,6 +233,7 @@ class ResellerTransactionController extends Controller
                 'bayar' => $request->bayar,
                 'sisa_kurang' => 0,
                 'retur' => $request->retur ?? 0,
+                'is_retur' => $request->is_retur ?? false,
                 'bukti_tf' => $buktiTfPath,
             ]);
 
@@ -238,7 +254,7 @@ class ResellerTransactionController extends Controller
                 $total_keuntungan += $keuntungan_item;
             }
 
-            $sisa_kurang = $request->bayar - $total_uang;
+            $sisa_kurang = ($request->is_retur ?? false) ? $total_uang : ($request->bayar - $total_uang);
 
             $transaction->update([
                 'total_barang' => $total_barang,
@@ -271,6 +287,7 @@ class ResellerTransactionController extends Controller
     {
         $resellerTransaction->load('details');
         $reseller = Reseller::findOrFail($resellerTransaction->reseller_id);
+        $is_retur = $resellerTransaction->is_retur;
 
         $specificBarangs = Barang::where('reseller_id', $reseller->id)->get();
 
@@ -288,7 +305,7 @@ class ResellerTransactionController extends Controller
                 ->get();
         }
 
-        return view('reseller_transactions.edit', compact('resellerTransaction', 'reseller', 'barangs'));
+        return view('reseller_transactions.edit', compact('resellerTransaction', 'reseller', 'barangs', 'is_retur'));
     }
 
     public function update(Request $request, ResellerTransaction $resellerTransaction)
@@ -298,6 +315,7 @@ class ResellerTransactionController extends Controller
             'tgl' => 'required|date',
             'bayar' => 'required|integer',
             'retur' => 'nullable|integer',
+            'is_retur' => 'nullable|boolean',
             'details' => 'required|array|min:1',
             'details.*.barang_id' => 'required|exists:barangs,id',
             'details.*.jumlah' => 'required|integer|min:1',
@@ -341,7 +359,7 @@ class ResellerTransactionController extends Controller
                 $total_keuntungan += $keuntungan_item;
             }
 
-            $sisa_kurang = $request->bayar - $total_uang;
+            $sisa_kurang = ($request->is_retur ?? false) ? $total_uang : ($request->bayar - $total_uang);
 
             $resellerTransaction->update([
                 'tgl' => $request->tgl,
@@ -351,6 +369,7 @@ class ResellerTransactionController extends Controller
                 'bayar' => $request->bayar,
                 'sisa_kurang' => $sisa_kurang,
                 'retur' => $request->retur ?? 0,
+                'is_retur' => $request->is_retur ?? false,
                 'bukti_tf' => $buktiTfPath,
             ]);
 
@@ -490,8 +509,13 @@ class ResellerTransactionController extends Controller
         $endDate = $request->input('end_date', Carbon::now()->toDateString());
 
         // 1. Calculate Previous Balance
-        // Sum of all sales before start date - sum of all payments before start date
         $allSalesBefore = ResellerTransaction::where('reseller_id', $reseller->id)
+            ->where('is_retur', false)
+            ->where('tgl', '<', $startDate)
+            ->sum('total_uang');
+
+        $allReturnsBefore = ResellerTransaction::where('reseller_id', $reseller->id)
+            ->where('is_retur', true)
             ->where('tgl', '<', $startDate)
             ->sum('total_uang');
 
@@ -499,9 +523,7 @@ class ResellerTransactionController extends Controller
             ->where('tgl', '<', $startDate)
             ->sum('nominal');
 
-        // Note: hutang_awal is the manual initial debt entered when creating the reseller.
-        // It is treated as a "beginning balance" at time zero.
-        $prevBalance = $reseller->hutang_awal + $allSalesBefore - $allPaymentsBefore;
+        $prevBalance = $reseller->hutang_awal + $allSalesBefore - $allReturnsBefore - $allPaymentsBefore;
 
         // 2. Fetch Line Items (Sales)
         $details = ResellerTransactionDetail::join('reseller_transactions', 'reseller_transaction_details.reseller_transaction_id', '=', 'reseller_transactions.id')
@@ -515,6 +537,7 @@ class ResellerTransactionController extends Controller
                 'barangs.hargajual_perlusin',
                 'reseller_transaction_details.jumlah',
                 'reseller_transaction_details.subtotal',
+                'reseller_transactions.is_retur',
                 DB::raw("'sale' as type")
             )
             ->get();
@@ -542,11 +565,15 @@ class ResellerTransactionController extends Controller
             $sales = $dayItems->where('type', 'sale')->values();
             $pay = $dayItems->where('type', 'payment')->values();
 
+            $normalSales = $sales->where('is_retur', false);
+            $returnSales = $sales->where('is_retur', true);
+
             $items[] = (object)[
                 'tgl' => $date,
                 'sales_details' => $sales,
                 'payments' => $pay,
-                'tagihan' => $sales->sum('subtotal'),
+                'tagihan' => $normalSales->sum('subtotal'),
+                'retur' => $returnSales->sum('subtotal'),
                 'bayar' => $pay->sum('subtotal'),
             ];
         }

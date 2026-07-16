@@ -15,6 +15,7 @@ class ResellerTransaction extends Model
         'bayar',
         'sisa_kurang',
         'retur',
+        'is_retur',
         'bukti_tf',
     ];
 

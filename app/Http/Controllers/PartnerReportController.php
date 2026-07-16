@@ -19,10 +19,10 @@ class PartnerReportController extends Controller
             ->select(
                 DB::raw('MONTH(tgl) as bulan'),
                 DB::raw('COUNT(DISTINCT reseller_id) as total_reseller'),
-                DB::raw('SUM(total_barang) as total_barang'),
-                DB::raw('SUM(total_uang) as total_uang'),
-                DB::raw('SUM(total_keuntungan) as total_keuntungan'),
-                DB::raw('SUM(bayar) as total_bayar'),
+                DB::raw('SUM(CASE WHEN is_retur = 0 THEN total_barang ELSE 0 END) as total_barang'),
+                DB::raw('SUM(CASE WHEN is_retur = 0 THEN total_uang ELSE 0 END) as total_uang'),
+                DB::raw('SUM(CASE WHEN is_retur = 0 THEN total_keuntungan ELSE 0 END) as total_keuntungan'),
+                DB::raw('SUM(CASE WHEN is_retur = 0 THEN bayar ELSE 0 END) as total_bayar'),
                 DB::raw('SUM(sisa_kurang) as total_piutang'),
                 DB::raw('SUM(retur) as total_retur')
             )
@@ -52,6 +52,7 @@ class PartnerReportController extends Controller
         $resellerDetails = \App\Models\ResellerTransactionDetail::join('reseller_transactions', 'reseller_transaction_details.reseller_transaction_id', '=', 'reseller_transactions.id')
             ->leftJoin('barangs', 'reseller_transaction_details.barang_id', '=', 'barangs.id')
             ->whereYear('reseller_transactions.tgl', $tahun)
+            ->where('reseller_transactions.is_retur', false)
             ->select(
                 'reseller_transactions.reseller_id',
                 'reseller_transaction_details.jumlah',
@@ -81,10 +82,10 @@ class PartnerReportController extends Controller
             ->select(
                 'reseller_transactions.reseller_id',
                 'resellers.nama',
-                DB::raw('SUM(total_barang) as total_barang'),
-                DB::raw('SUM(total_uang) as total_penjualan'),
-                DB::raw('SUM(total_keuntungan) as total_keuntungan'),
-                DB::raw('SUM(bayar) as total_bayar'),
+                DB::raw('SUM(CASE WHEN is_retur = 0 THEN total_barang ELSE 0 END) as total_barang'),
+                DB::raw('SUM(CASE WHEN is_retur = 0 THEN total_uang ELSE 0 END) as total_penjualan'),
+                DB::raw('SUM(CASE WHEN is_retur = 0 THEN total_keuntungan ELSE 0 END) as total_keuntungan'),
+                DB::raw('SUM(CASE WHEN is_retur = 0 THEN bayar ELSE 0 END) as total_bayar'),
                 DB::raw('SUM(sisa_kurang) as total_piutang')
             )
             ->groupBy('reseller_transactions.reseller_id', 'resellers.nama')
@@ -109,9 +110,9 @@ class PartnerReportController extends Controller
             ->select(
                 DB::raw('MONTH(tgl) as bulan'),
                 DB::raw('COUNT(DISTINCT supplier_id) as total_supplier'),
-                DB::raw('SUM(total_barang) as total_barang'),
-                DB::raw('SUM(total_uang) as total_uang'),
-                DB::raw('SUM(bayar) as total_bayar'),
+                DB::raw('SUM(CASE WHEN is_retur = 0 THEN total_barang ELSE 0 END) as total_barang'),
+                DB::raw('SUM(CASE WHEN is_retur = 0 THEN total_uang ELSE 0 END) as total_uang'),
+                DB::raw('SUM(CASE WHEN is_retur = 0 THEN bayar ELSE 0 END) as total_bayar'),
                 DB::raw('SUM(total_tagihan) as total_hutang'),
                 DB::raw('SUM(retur) as total_retur')
             )
@@ -140,6 +141,7 @@ class PartnerReportController extends Controller
         $supplierDetails = \App\Models\SupplierTransactionDetail::join('supplier_transactions', 'supplier_transaction_details.supplier_transaction_id', '=', 'supplier_transactions.id')
             ->leftJoin('barangs', 'supplier_transaction_details.barang_id', '=', 'barangs.id')
             ->whereYear('supplier_transactions.tgl', $tahun)
+            ->where('supplier_transactions.is_retur', false)
             ->select(
                 'supplier_transactions.supplier_id',
                 'supplier_transaction_details.jumlah',
@@ -169,9 +171,9 @@ class PartnerReportController extends Controller
             ->select(
                 'supplier_transactions.supplier_id',
                 'suppliers.nama',
-                DB::raw('SUM(total_barang) as total_barang'),
-                DB::raw('SUM(total_uang) as total_pembelian'),
-                DB::raw('SUM(bayar) as total_bayar'),
+                DB::raw('SUM(CASE WHEN is_retur = 0 THEN total_barang ELSE 0 END) as total_barang'),
+                DB::raw('SUM(CASE WHEN is_retur = 0 THEN total_uang ELSE 0 END) as total_pembelian'),
+                DB::raw('SUM(CASE WHEN is_retur = 0 THEN bayar ELSE 0 END) as total_bayar'),
                 DB::raw('SUM(total_tagihan) as total_hutang')
             )
             ->groupBy('supplier_transactions.supplier_id', 'suppliers.nama')

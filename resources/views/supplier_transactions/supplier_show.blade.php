@@ -118,6 +118,10 @@
                                     class="btn btn-primary btn-sm shadow-sm">
                                     <i class="fas fa-plus"></i> Tambah Transaksi
                                 </a>
+                                <a href="{{ route('supplier_transactions.create', ['supplier_id' => $supplier->id, 'is_retur' => 1]) }}"
+                                    class="btn btn-warning btn-sm shadow-sm text-dark">
+                                    <i class="fas fa-undo"></i> Input Retur
+                                </a>
                                 <a href="{{ route('supplier_transactions.invoice', $supplier->id) }}"
                                     class="btn btn-info btn-sm shadow-sm text-white">
                                     <i class="fas fa-file-invoice"></i> Cetak Invoice
@@ -238,7 +242,12 @@
                         <tbody>
                             @foreach($transactions as $trx)
                             <tr style="border-bottom: 1px solid #f8f9fa;">
-                                <td><span class="fw-medium">{{ date('d M Y', strtotime($trx->tgl)) }}</span></td>
+                                <td>
+                                    <span class="fw-medium">{{ date('d M Y', strtotime($trx->tgl)) }}</span>
+                                    @if($trx->is_retur)
+                                        <span class="badge bg-warning text-dark ms-1">Retur</span>
+                                    @endif
+                                </td>
                                 @php
                                     $sumLusin = 0;
                                     $sumPotong = 0;
@@ -252,19 +261,27 @@
                                 <td class="text-center">{{ $sumLusin ?: '-' }}</td>
                                 <td class="text-center">{{ $sumPotong ?: '-' }}</td>
                                 <td class="text-muted">{{ $trx->retur }}</td>
-                                <td class="fw-bold">Rp {{ number_format($trx->total_uang, 0, ',', '.') }}</td>
-                                <td class="text-success fw-bold">Rp {{ number_format($trx->bayar, 0, ',', '.') }}</td>
+                                <td class="fw-bold {{ $trx->is_retur ? 'text-danger' : '' }}">
+                                    {{ $trx->is_retur ? '-' : '' }} Rp {{ number_format($trx->total_uang, 0, ',', '.') }}
+                                </td>
+                                <td class="text-success fw-bold">Rp {{ $trx->is_retur ? 0 : number_format($trx->bayar, 0, ',', '.') }}</td>
                                 <td>
-                                    @if($trx->total_tagihan > 0)
-                                    <span class="badge bg-success bg-opacity-10 text-success px-2 py-1 rounded-pill">+
-                                        Rp {{ number_format($trx->total_tagihan, 0, ',', '.') }}</span>
-                                    @elseif($trx->total_tagihan < 0) <span
-                                        class="badge bg-danger bg-opacity-10 text-danger px-2 py-1 rounded-pill">- Rp {{
-                                        number_format(abs($trx->total_tagihan), 0, ',', '.') }}</span>
-                                        @else
-                                        <span
-                                            class="badge bg-secondary bg-opacity-10 text-secondary px-2 py-1 rounded-pill">Lunas</span>
-                                        @endif
+                                    @if($trx->is_retur)
+                                        <span class="badge bg-warning bg-opacity-10 text-dark px-2 py-1 rounded-pill">
+                                            - Rp {{ number_format($trx->total_tagihan, 0, ',', '.') }}
+                                        </span>
+                                    @else
+                                        @if($trx->total_tagihan > 0)
+                                        <span class="badge bg-success bg-opacity-10 text-success px-2 py-1 rounded-pill">+
+                                            Rp {{ number_format($trx->total_tagihan, 0, ',', '.') }}</span>
+                                        @elseif($trx->total_tagihan < 0) <span
+                                            class="badge bg-danger bg-opacity-10 text-danger px-2 py-1 rounded-pill">- Rp {{
+                                            number_format(abs($trx->total_tagihan), 0, ',', '.') }}</span>
+                                            @else
+                                            <span
+                                                class="badge bg-secondary bg-opacity-10 text-secondary px-2 py-1 rounded-pill">Lunas</span>
+                                            @endif
+                                    @endif
                                 </td>
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center gap-1">

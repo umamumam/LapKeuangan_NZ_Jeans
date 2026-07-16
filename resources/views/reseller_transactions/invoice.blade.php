@@ -25,36 +25,36 @@
                             $totalRunning = $prevBalance;
                             if(isset($items)) {
                             foreach($items as $item) {
-                            $totalRunning += ($item->tagihan - $item->bayar);
+                            $totalRunning += ($item->tagihan - $item->retur - $item->bayar);
                             }
                             }
 
                             $waMessage = "Invoice Transaksi NZ Jeans\n" .
                             "Reseller: " . $reseller->nama . "\n" .
-                            "Periode: " . date('d/m/Y', strtotime($startDate)) . " - " . date('d/m/Y', strtotime($endDate)) . "\n\n" .
-                            ($totalRunning < 0 ? "Kelebihan Bayar" : "Total Tagihan") . ": Rp. " . number_format(abs($totalRunning), 0, ',', '.') . "\n\n" .
-                            "Terima kasih";
-
-                            $waPhone = $reseller->telepon ? preg_replace('/[^0-9]/', '', $reseller->telepon) : '';
-                            if($waPhone && !str_starts_with($waPhone, '62') && str_starts_with($waPhone, '0')) {
-                            $waPhone = '62' . substr($waPhone, 1);
-                            }
-                            @endphp
-                            @if($waPhone)
-                            <button type="button" onclick="sendToWhatsApp('personal')"
-                                class="btn btn-success shadow-sm">
-                                <i class="fab fa-whatsapp me-1"></i> Kirim ke No WA
-                            </button>
-                            @else
-                            <button type="button" class="btn btn-success shadow-sm disabled"
-                                title="Nomor HP belum diatur">
-                                <i class="fab fa-whatsapp me-1"></i> Kirim ke No WA
-                            </button>
-                            @endif
-                            <button type="button" onclick="sendToWhatsApp('group')"
-                                class="btn btn-outline-success shadow-sm">
-                                <i class="fas fa-users me-1"></i> Kirim ke Grup
-                            </button>
+                            "Periode: " . date('d/m/Y', strtotime($startDate)) . " - " . date('d/m/Y',
+                            strtotime($endDate)) . "\n\n" .
+                            ($totalRunning < 0 ? "Kelebihan Bayar" : "Total Tagihan" ) . ": Rp. " .
+                                number_format(abs($totalRunning), 0, ',' , '.' ) . "\n\n" . "Terima kasih" ;
+                                $waPhone=$reseller->telepon ? preg_replace('/[^0-9]/', '', $reseller->telepon) : '';
+                                if($waPhone && !str_starts_with($waPhone, '62') && str_starts_with($waPhone, '0')) {
+                                $waPhone = '62' . substr($waPhone, 1);
+                                }
+                                @endphp
+                                @if($waPhone)
+                                <button type="button" onclick="sendToWhatsApp('personal')"
+                                    class="btn btn-success shadow-sm">
+                                    <i class="fab fa-whatsapp me-1"></i> Kirim ke No WA
+                                </button>
+                                @else
+                                <button type="button" class="btn btn-success shadow-sm disabled"
+                                    title="Nomor HP belum diatur">
+                                    <i class="fab fa-whatsapp me-1"></i> Kirim ke No WA
+                                </button>
+                                @endif
+                                <button type="button" onclick="sendToWhatsApp('group')"
+                                    class="btn btn-outline-success shadow-sm">
+                                    <i class="fas fa-users me-1"></i> Kirim ke Grup
+                                </button>
                         </div>
                     </form>
                 </div>
@@ -94,15 +94,16 @@
                                     <th rowspan="2" class="align-middle"
                                         style="width: 100px; padding: 12px 5px !important;">
                                         Tanggal</th>
-                                    <th rowspan="2" class="align-middle"
-                                        style="padding: 12px 5px !important;">
+                                    <th rowspan="2" class="align-middle" style="padding: 12px 5px !important;">
                                         Jenis Barang</th>
                                     <th rowspan="2" class="align-middle"
                                         style="width: 80px; padding: 12px 5px !important;">
                                         UKURAN</th>
-                                    <th colspan="4" class="text-center"
-                                        style="padding: 8px !important;">Harga
+                                    <th colspan="4" class="text-center" style="padding: 8px !important;">Harga
                                         Jual</th>
+                                    <th rowspan="2" class="align-middle"
+                                        style="width: 120px; padding: 12px 5px !important; line-height: 1.2;">
+                                        RETUR</th>
                                     <th rowspan="2" class="align-middle"
                                         style="width: 130px; padding: 12px 5px !important; line-height: 1.2;">
                                         JUMLAH<br>BAYAR</th>
@@ -125,7 +126,7 @@
                                 <!-- Previous Balance Row -->
                                 <tr class="fw-bold" style="background-color: #fefefe;">
                                     <td style="border: 1px solid #333 !important;"></td> {{-- Tanggal Kosong --}}
-                                    <td colspan="6" class="text-center text-uppercase"
+                                    <td colspan="7" class="text-center text-uppercase"
                                         style="border: 1px solid #333 !important; letter-spacing: 2px;">TOTAL</td>
                                     <td class="text-center text-uppercase"
                                         style="border: 1px solid #333 !important; font-size: 0.85rem;">
@@ -157,7 +158,11 @@
                                 {{-- Render Sales --}}
                                 @foreach($sales as $index => $sale)
                                 @php
+                                if ($sale->is_retur) {
+                                $runningBalance -= $sale->subtotal;
+                                } else {
                                 $runningBalance += $sale->subtotal;
+                                }
                                 $currentRow++;
                                 @endphp
                                 <tr class="row-data">
@@ -175,8 +180,7 @@
                                     $isLusin = $sale->hargajual_perlusin > 0 && round($unitPrice) ==
                                     round($sale->hargajual_perlusin);
                                     @endphp
-                                    <td class="text-end"
-                                        style="padding: 5px !important;">
+                                    <td class="text-end" style="padding: 5px !important;">
                                         <table style="width: 100%; border: none !important; background: transparent;">
                                             <tr style="border: none !important;">
                                                 <td
@@ -194,8 +198,10 @@
                                     <td>
                                         {{ !$isLusin ? $sale->jumlah : '' }}
                                     </td> {{-- Perpotong --}}
-                                    <td class="text-end"
-                                        style="padding: 5px !important;">
+                                    <td class="text-end" style="padding: 5px !important;">
+                                        @if($sale->is_retur)
+                                        -
+                                        @else
                                         <table style="width: 100%; border: none !important; background: transparent;">
                                             <tr style="border: none !important;">
                                                 <td
@@ -206,10 +212,26 @@
                                                     {{ number_format($sale->subtotal, 0, ',', '.') }}</td>
                                             </tr>
                                         </table>
+                                        @endif
+                                    </td>
+                                    <td class="text-end" style="padding: 5px !important;">
+                                        @if($sale->is_retur)
+                                        <table style="width: 100%; border: none !important; background: transparent;">
+                                            <tr style="border: none !important;">
+                                                <td
+                                                    style="text-align: left; border: none !important; padding: 0 !important; color: inherit; font-weight: bold;">
+                                                    IDR</td>
+                                                <td
+                                                    style="text-align: right; border: none !important; padding: 0 !important; color: inherit; font-weight: bold;">
+                                                    {{ number_format($sale->subtotal, 0, ',', '.') }}</td>
+                                            </tr>
+                                        </table>
+                                        @else
+                                        -
+                                        @endif
                                     </td>
                                     <td class="text-end">-</td>
-                                    <td class="text-end fw-bold"
-                                        style="padding: 5px !important;">
+                                    <td class="text-end fw-bold" style="padding: 5px !important;">
                                         <table style="width: 100%; border: none !important; background: transparent;">
                                             <tr style="border: none !important;">
                                                 <td
@@ -244,8 +266,8 @@
                                     <td>-</td>
                                     <td>-</td>
                                     <td>-</td>
-                                    <td class="text-end fw-bold text-success"
-                                        style="padding: 5px !important;">
+                                    <td>-</td>
+                                    <td class="text-end fw-bold text-success" style="padding: 5px !important;">
                                         <table style="width: 100%; border: none !important; background: transparent;">
                                             <tr style="border: none !important;">
                                                 <td
@@ -257,8 +279,7 @@
                                             </tr>
                                         </table>
                                     </td>
-                                    <td class="text-end fw-bold"
-                                        style="padding: 5px !important;">
+                                    <td class="text-end fw-bold" style="padding: 5px !important;">
                                         <table style="width: 100%; border: none !important; background: transparent;">
                                             <tr style="border: none !important;">
                                                 <td
@@ -277,7 +298,7 @@
                                 @if(date('N', strtotime($item->tgl)) == 5)
                                 <tr class="fw-bold" style="background-color: #f8f9fa;">
                                     <td style="border: 1px solid #333 !important;"></td> {{-- Tanggal Kosong --}}
-                                    <td colspan="7" class="text-center text-uppercase"
+                                    <td colspan="8" class="text-center text-uppercase"
                                         style="border: 1px solid #333 !important; letter-spacing: 2px;">TOTAL</td>
                                     <td class="text-end"
                                         style="border: 1px solid #333 !important; padding: 5px !important;">
@@ -297,10 +318,9 @@
                                 @endforeach
 
                                 <!-- Footer Total -->
-                                <tr class="fw-bold"
-                                    style="background-color: #fefefe;">
-                                    <td colspan="8" class="text-end text-uppercase"
-                                        style="letter-spacing: 1px;">TOTAL HUTANG
+                                <tr class="fw-bold" style="background-color: #fefefe;">
+                                    <td colspan="9" class="text-end text-uppercase" style="letter-spacing: 1px;">TOTAL
+                                        HUTANG
                                         SAAT INI</td>
                                     <td class="text-end text-danger"
                                         style="border: 1px solid #333 !important; font-size: 1.1rem; padding: 5px !important;">
@@ -317,10 +337,10 @@
                                     </td>
                                 </tr>
 
-                                @if($runningBalance < 0)
-                                <tr class="fw-bold" style="background-color: #f0fdf4;">
+                                @if($runningBalance < 0) <tr class="fw-bold" style="background-color: #f0fdf4;">
                                     <td colspan="8" class="text-end text-uppercase"
-                                        style="border: 1px solid #333 !important; letter-spacing: 1px; color: #15803d;">SISA UANG SAAT INI / KELEBIHAN BAYAR</td>
+                                        style="border: 1px solid #333 !important; letter-spacing: 1px; color: #15803d;">
+                                        SISA UANG SAAT INI / KELEBIHAN BAYAR</td>
                                     <td class="text-end text-success"
                                         style="border: 1px solid #333 !important; font-size: 1.1rem; padding: 5px !important; background-color: #f0fdf4;">
                                         <table style="width: 100%; border: none !important; background: transparent;">
@@ -334,8 +354,8 @@
                                             </tr>
                                         </table>
                                     </td>
-                                </tr>
-                                @endif
+                                    </tr>
+                                    @endif
                             </tbody>
                         </table>
                     </div>

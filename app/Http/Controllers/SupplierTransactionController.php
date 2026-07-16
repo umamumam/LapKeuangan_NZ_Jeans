@@ -21,7 +21,12 @@ class SupplierTransactionController extends Controller
 
         $suppliers = Supplier::with(['barangs'])
             ->withSum('payments', 'nominal')
-            ->withSum('transactions', 'total_uang')
+            ->withSum(['transactions' => function($q) {
+                $q->where('is_retur', false);
+            }], 'total_uang')
+            ->withSum(['transactions as returns_sum_total_uang' => function($q) {
+                $q->where('is_retur', true);
+            }], 'total_uang')
             ->withMax('transactions', 'updated_at')
             ->withMax('payments', 'updated_at')
             ->orderBy('nama')
@@ -56,19 +61,23 @@ class SupplierTransactionController extends Controller
                 $week = 'minggu_5';
             }
 
-            $rekapGlobal[$week]['total_uang'] += $trx->total_uang;
-            $rekapGlobal[$week]['bayar'] += $trx->bayar;
-            $rekapGlobal[$week]['total_tagihan'] += $trx->total_tagihan;
+            if ($trx->is_retur) {
+                $rekapGlobal[$week]['total_tagihan'] += $trx->total_tagihan;
+            } else {
+                $rekapGlobal[$week]['total_uang'] += $trx->total_uang;
+                $rekapGlobal[$week]['bayar'] += $trx->bayar;
+                $rekapGlobal[$week]['total_tagihan'] += $trx->total_tagihan;
+            }
         }
 
         foreach ($suppliers as $supplier) {
             $trx = $allTransactions->where('supplier_id', $supplier->id);
-            $supplier->total_uang = $trx->sum('total_uang');
+            $supplier->total_uang = $trx->where('is_retur', false)->sum('total_uang');
             $supplier->bayar = $trx->sum('bayar');
             
             $supplier->total_lusin = 0;
             $supplier->total_potong = 0;
-            foreach($trx as $t) {
+            foreach($trx->where('is_retur', false) as $t) {
                 foreach($t->details as $d) {
                     $unitPrice = $d->subtotal / ($d->jumlah ?: 1);
                     $isLusin = ($d->barang && $d->barang->hargabeli_perlusin > 0 && round($unitPrice) == round($d->barang->hargabeli_perlusin));
@@ -77,8 +86,8 @@ class SupplierTransactionController extends Controller
                 }
             }
             
-            // Global balance using ledger formula: Total Payments - Total Costs - Initial Debt
-            $supplier->total_tagihan = ($supplier->payments_sum_nominal ?? 0) - ($supplier->transactions_sum_total_uang ?? 0) - $supplier->hutang_awal;
+            // Global balance using ledger formula: Total Payments - Total Costs + Total Returns - Initial Debt
+            $supplier->total_tagihan = ($supplier->payments_sum_nominal ?? 0) - ($supplier->transactions_sum_total_uang ?? 0) + ($supplier->returns_sum_total_uang ?? 0) - $supplier->hutang_awal;
         }
 
         // Orang yang Sisa/Kurang < 0 (berhutang/tagihan) atau memiliki transaksi/pembayaran di bulan ini
@@ -112,7 +121,7 @@ class SupplierTransactionController extends Controller
         $hasDebt = $supplier->hutang_awal > 0;
 
         foreach ($transactions as $trx) {
-            if ($trx->total_tagihan < 0) {
+            if (!$trx->is_retur && $trx->total_tagihan < 0) {
                 $hasDebt = true;
             }
 
@@ -129,9 +138,13 @@ class SupplierTransactionController extends Controller
                 $week = 'minggu_5';
             }
 
-            $rekap[$week]['total_uang'] += $trx->total_uang;
-            $rekap[$week]['bayar'] += $trx->bayar;
-            $rekap[$week]['total_tagihan'] += $trx->total_tagihan;
+            if ($trx->is_retur) {
+                $rekap[$week]['total_tagihan'] += $trx->total_tagihan;
+            } else {
+                $rekap[$week]['total_uang'] += $trx->total_uang;
+                $rekap[$week]['bayar'] += $trx->bayar;
+                $rekap[$week]['total_tagihan'] += $trx->total_tagihan;
+            }
         }
 
         $payments = \App\Models\SupplierPayment::where('supplier_id', $supplier->id)
@@ -141,7 +154,7 @@ class SupplierTransactionController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
-        $globalBalance = $supplier->payments()->sum('nominal') - $supplier->transactions()->sum('total_uang') - $supplier->hutang_awal;
+        $globalBalance = $supplier->payments()->sum('nominal') - $supplier->transactions()->where('is_retur', false)->sum('total_uang') + $supplier->transactions()->where('is_retur', true)->sum('total_uang') - $supplier->hutang_awal;
 
         return view('supplier_transactions.supplier_show', compact('supplier', 'transactions', 'rekap', 'month', 'year', 'hasDebt', 'payments', 'globalBalance'));
     }
@@ -149,6 +162,7 @@ class SupplierTransactionController extends Controller
     public function create(Request $request)
     {
         $supplierId = $request->query('supplier_id');
+        $is_retur = $request->query('is_retur', 0);
 
         if (!$supplierId) {
             return redirect()->route('supplier_transactions.index')->with('error', 'Silahkan pilih supplier terlebih dahulu.');
@@ -157,7 +171,7 @@ class SupplierTransactionController extends Controller
         $supplier = Supplier::findOrFail($supplierId);
         $barangs = Barang::where('supplier_id', $supplierId)->orderBy('namabarang')->get();
 
-        return view('supplier_transactions.create', compact('supplier', 'barangs'));
+        return view('supplier_transactions.create', compact('supplier', 'barangs', 'is_retur'));
     }
 
     public function store(Request $request)
@@ -167,6 +181,7 @@ class SupplierTransactionController extends Controller
             'tgl' => 'required|date',
             'bayar' => 'required|integer',
             'retur' => 'nullable|integer',
+            'is_retur' => 'nullable|boolean',
             'details' => 'required|array|min:1',
             'details.*.barang_id' => 'required|exists:barangs,id',
             'details.*.jumlah' => 'required|integer|min:1',
@@ -193,6 +208,7 @@ class SupplierTransactionController extends Controller
                 'bayar' => $request->bayar,
                 'total_tagihan' => 0,
                 'retur' => $request->retur ?? 0,
+                'is_retur' => $request->is_retur ?? false,
                 'bukti_tf' => $buktiTfPath,
             ]);
 
@@ -210,7 +226,7 @@ class SupplierTransactionController extends Controller
                 $total_uang += $subtotal;
             }
 
-            $total_tagihan = $request->bayar - $total_uang;
+            $total_tagihan = ($request->is_retur ?? false) ? $total_uang : ($request->bayar - $total_uang);
 
             $transaction->update([
                 'total_barang' => $total_barang,
@@ -243,8 +259,9 @@ class SupplierTransactionController extends Controller
         $supplierTransaction->load('details');
         $supplier = Supplier::findOrFail($supplierTransaction->supplier_id);
         $barangs = Barang::where('supplier_id', $supplier->id)->orderBy('namabarang')->get();
+        $is_retur = $supplierTransaction->is_retur;
 
-        return view('supplier_transactions.edit', compact('supplierTransaction', 'supplier', 'barangs'));
+        return view('supplier_transactions.edit', compact('supplierTransaction', 'supplier', 'barangs', 'is_retur'));
     }
 
     public function update(Request $request, SupplierTransaction $supplierTransaction)
@@ -254,6 +271,7 @@ class SupplierTransactionController extends Controller
             'tgl' => 'required|date',
             'bayar' => 'required|integer',
             'retur' => 'nullable|integer',
+            'is_retur' => 'nullable|boolean',
             'details' => 'required|array|min:1',
             'details.*.barang_id' => 'required|exists:barangs,id',
             'details.*.jumlah' => 'required|integer|min:1',
@@ -292,7 +310,7 @@ class SupplierTransactionController extends Controller
                 $total_uang += $subtotal;
             }
 
-            $total_tagihan = $request->bayar - $total_uang;
+            $total_tagihan = ($request->is_retur ?? false) ? $total_uang : ($request->bayar - $total_uang);
 
             $supplierTransaction->update([
                 'tgl' => $request->tgl,
@@ -301,6 +319,7 @@ class SupplierTransactionController extends Controller
                 'bayar' => $request->bayar,
                 'total_tagihan' => $total_tagihan,
                 'retur' => $request->retur ?? 0,
+                'is_retur' => $request->is_retur ?? false,
                 'bukti_tf' => $buktiTfPath,
             ]);
 
@@ -623,6 +642,12 @@ class SupplierTransactionController extends Controller
 
         // 1. Calculate Previous Balance
         $allSalesBefore = SupplierTransaction::where('supplier_id', $supplier->id)
+            ->where('is_retur', false)
+            ->where('tgl', '<', $startDate)
+            ->sum('total_uang');
+
+        $allReturnsBefore = SupplierTransaction::where('supplier_id', $supplier->id)
+            ->where('is_retur', true)
             ->where('tgl', '<', $startDate)
             ->sum('total_uang');
 
@@ -630,7 +655,7 @@ class SupplierTransactionController extends Controller
             ->where('tgl', '<', $startDate)
             ->sum('nominal');
 
-        $prevBalance = $supplier->hutang_awal + $allSalesBefore - $allPaymentsBefore;
+        $prevBalance = $supplier->hutang_awal + $allSalesBefore - $allReturnsBefore - $allPaymentsBefore;
 
         // 2. Fetch Line Items (Sales)
         $details = SupplierTransactionDetail::join('supplier_transactions', 'supplier_transaction_details.supplier_transaction_id', '=', 'supplier_transactions.id')
@@ -644,6 +669,7 @@ class SupplierTransactionController extends Controller
                 'barangs.hargabeli_perlusin',
                 'supplier_transaction_details.jumlah',
                 'supplier_transaction_details.subtotal',
+                'supplier_transactions.is_retur',
                 DB::raw("'sale' as type")
             )
             ->get();
@@ -670,11 +696,15 @@ class SupplierTransactionController extends Controller
             $sales = $dayItems->where('type', 'sale')->values();
             $pay = $dayItems->where('type', 'payment')->values();
 
+            $normalSales = $sales->where('is_retur', false);
+            $returnSales = $sales->where('is_retur', true);
+
             $items[] = (object)[
                 'tgl' => $date,
                 'sales_details' => $sales,
                 'payments' => $pay,
-                'tagihan' => $sales->sum('subtotal'),
+                'tagihan' => $normalSales->sum('subtotal'),
+                'retur' => $returnSales->sum('subtotal'),
                 'bayar' => $pay->sum('subtotal'),
             ];
         }
