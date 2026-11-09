@@ -11,37 +11,37 @@
         </div>
         <div class="navbar-content">
             <ul class="pc-navbar">
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('dashboard*') ? 'active' : '' }}">
                     <a href="/dashboard" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
                         <span class="pc-mtext">Dashboard</span>
                     </a>
                 </li>
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('toko*') ? 'active' : '' }}">
                     <a href="/toko" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-building-store"></i></span>
                         <span class="pc-mtext">Daftar Toko</span>
                     </a>
                 </li>
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('periodes*') ? 'active' : '' }}">
                     <a href="/periodes" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-calendar"></i></span>
                         <span class="pc-mtext">Daftar Periode</span>
                     </a>
                 </li>
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('produks*') ? 'active' : '' }}">
                     <a href="/produks" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-package"></i></span>
                         <span class="pc-mtext">Daftar Produk</span>
                     </a>
                 </li>
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('orders*') ? 'active' : '' }}">
                     <a href="/orders" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-shopping-cart"></i></span>
                         <span class="pc-mtext">Daftar Order</span>
                     </a>
                 </li>
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('incomes') || (Request::is('incomes/*') && !Request::is('incomes/detailhasil*') && !Request::is('incomes/hasil*')) ? 'active' : '' }}">
                     <a href="/incomes" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-cash"></i></span>
                         <span class="pc-mtext">Daftar Income</span>
@@ -53,13 +53,13 @@
                         <span class="pc-mtext">Total Bulanan</span>
                     </a>
                 </li> --}}
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('incomes/detailhasil*') ? 'active' : '' }}">
                     <a href="/incomes/detailhasil" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-chart-bar"></i></span>
                         <span class="pc-mtext">Hasil</span>
                     </a>
                 </li>
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('monthly-finances*') ? 'active' : '' }}">
                     <a href="/monthly-finances" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-report-analytics"></i></span>
                         <span class="pc-mtext">Summary & Output</span>
@@ -71,7 +71,7 @@
                         <span class="pc-mtext">Rekap</span>
                     </a>
                 </li> --}}
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('rekaps/hasil*') ? 'active' : '' }}">
                     <a href="/rekaps/hasil" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-chart-line"></i></span>
                         <span class="pc-mtext">Rekap Hasil</span>
@@ -105,13 +105,13 @@
                     <label style="color: red;">Reseller & Supplier</label>
                     <i class="ti ti-news"></i>
                 </li>
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('partners*') || Request::is('resellers*') || Request::is('suppliers*') ? 'active' : '' }}">
                     <a href="/partners" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-users"></i></span>
                         <span class="pc-mtext">Reseller & Supplier</span>
                     </a>
                 </li>
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('barangs*') ? 'active' : '' }}">
                     <a href="/barangs" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-box"></i></span>
                         <span class="pc-mtext">Daftar Barang</span>
@@ -145,19 +145,19 @@
                     <label style="color: red;">Penggajian Karyawan</label>
                     <i class="ti ti-news"></i>
                 </li>
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('karyawan*') ? 'active' : '' }}">
                     <a href="/karyawan" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-report-analytics"></i></span>
                         <span class="pc-mtext">Daftar Karyawan</span>
                     </a>
                 </li>
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('gaji*') ? 'active' : '' }}">
                     <a href="/gaji" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-qrcode"></i></span>
                         <span class="pc-mtext">Daftar Gaji</span>
                     </a>
                 </li>
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('petty_cash*') ? 'active' : '' }}">
                     <a href="/petty_cash" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-wallet"></i></span>
                         <span class="pc-mtext">Petty Cash NZ</span>
@@ -167,13 +167,13 @@
                     <label style="color: red;">Pengembalian / Pembatalan</label>
                     <i class="ti ti-news"></i>
                 </li>
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('bandings') || (Request::is('bandings/*') && !Request::is('bandings/search*')) ? 'active' : '' }}">
                     <a href="/bandings" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-report-analytics"></i></span>
                         <span class="pc-mtext">Daftar Banding</span>
                     </a>
                 </li>
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('bandings/search*') ? 'active' : '' }}">
                     <a href="/bandings/search" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-qrcode"></i></span>
                         <span class="pc-mtext">Scan Resi</span>
@@ -185,7 +185,7 @@
                         <span class="pc-mtext">Scan Resi V2</span>
                     </a>
                 </li> --}}
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('scan-ok*') ? 'active' : '' }}">
                     <a href="/scan-ok" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-barcode"></i></span>
                         <span class="pc-mtext">Scan Resi V2</span>
@@ -203,19 +203,19 @@
                         <span class="pc-mtext">Status Belum Diterima</span>
                     </a>
                 </li> --}}
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('data-ok*') ? 'active' : '' }}">
                     <a href="/data-ok" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-circle-check"></i></span>
                         <span class="pc-mtext">Daftar Status Diterima OK</span>
                     </a>
                 </li>
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('data-belum*') ? 'active' : '' }}">
                     <a href="/data-belum" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-circle-x"></i></span>
                         <span class="pc-mtext">Status Belum Diterima</span>
                     </a>
                 </li>
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('pengembalian-penukaran*') ? 'active' : '' }}">
                     <a href="/pengembalian-penukaran" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-refresh"></i></span>
                         <span class="pc-mtext">Pengembalian_Penukaran</span>
@@ -225,19 +225,19 @@
                     <label style="color: red;">Pengiriman Sampel</label>
                     <i class="ti ti-news"></i>
                 </li>
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('sampels*') ? 'active' : '' }}">
                     <a href="/sampels" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-report-analytics"></i></span>
                         <span class="pc-mtext">Daftar Sampel</span>
                     </a>
                 </li>
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('pengiriman-sampels') || (Request::is('pengiriman-sampels/*') && !Request::is('pengiriman-sampels-rekap*')) ? 'active' : '' }}">
                     <a href="/pengiriman-sampels" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-truck"></i></span>
                         <span class="pc-mtext">Daftar Pengiriman Sampel</span>
                     </a>
                 </li>
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('pengiriman-sampels-rekap*') ? 'active' : '' }}">
                     <a href="/pengiriman-sampels-rekap" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-file-text"></i></span>
                         <span class="pc-mtext">Rekap Pengiriman Sampel</span>
@@ -349,3 +349,43 @@
         </div>
     </div>
 </nav>
+
+<script>
+    (function () {
+        function scrollSidebarToActiveMenu() {
+            var sidebar = document.querySelector('.pc-sidebar');
+            if (!sidebar) return;
+
+            var activeElem = sidebar.querySelector('.pc-navbar li.active') ||
+                             sidebar.querySelector('.pc-navbar .active');
+            if (!activeElem) return;
+
+            var navbarContent = sidebar.querySelector('.navbar-content');
+            if (!navbarContent) return;
+
+            var scrollWrapper = navbarContent.querySelector('.simplebar-content-wrapper') || navbarContent;
+            var itemRect = activeElem.getBoundingClientRect();
+            var containerRect = scrollWrapper.getBoundingClientRect();
+
+            if (containerRect.height > 0) {
+                var currentScroll = scrollWrapper.scrollTop;
+                var targetScroll = currentScroll + (itemRect.top - containerRect.top) - (scrollWrapper.clientHeight / 2) + (activeElem.clientHeight / 2);
+                scrollWrapper.scrollTop = Math.max(0, targetScroll);
+            } else if (activeElem.scrollIntoView) {
+                activeElem.scrollIntoView({ block: 'center' });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            scrollSidebarToActiveMenu();
+            setTimeout(scrollSidebarToActiveMenu, 50);
+            setTimeout(scrollSidebarToActiveMenu, 150);
+            setTimeout(scrollSidebarToActiveMenu, 350);
+        });
+
+        window.addEventListener('load', function () {
+            scrollSidebarToActiveMenu();
+            setTimeout(scrollSidebarToActiveMenu, 100);
+        });
+    })();
+</script>

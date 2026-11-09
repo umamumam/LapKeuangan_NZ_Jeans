@@ -143,6 +143,33 @@ function add_scroller() {
     new SimpleBar(document.querySelector('.navbar-content'));
   }
   // Menu scrollbar end
+  scroll_to_active_menu();
+}
+
+function scroll_to_active_menu() {
+  setTimeout(function () {
+    var sidebar = document.querySelector('.pc-sidebar');
+    if (!sidebar) return;
+
+    var activeElem = sidebar.querySelector('.pc-navbar li.active') ||
+                     sidebar.querySelector('.pc-navbar .active');
+    if (!activeElem) return;
+
+    var navbarContent = sidebar.querySelector('.navbar-content');
+    if (!navbarContent) return;
+
+    var scrollWrapper = navbarContent.querySelector('.simplebar-content-wrapper') || navbarContent;
+    var itemRect = activeElem.getBoundingClientRect();
+    var containerRect = scrollWrapper.getBoundingClientRect();
+
+    if (containerRect.height > 0) {
+      var currentScroll = scrollWrapper.scrollTop;
+      var targetScroll = currentScroll + (itemRect.top - containerRect.top) - (scrollWrapper.clientHeight / 2) + (activeElem.clientHeight / 2);
+      scrollWrapper.scrollTop = Math.max(0, targetScroll);
+    } else if (activeElem.scrollIntoView) {
+      activeElem.scrollIntoView({ block: 'center' });
+    }
+  }, 50);
 }
 
 // Menu click start
@@ -266,6 +293,7 @@ window.addEventListener('load', function () {
   var toastList = toastElList.map(function (toastEl) {
     return new bootstrap.Toast(toastEl);
   });
+  scroll_to_active_menu();
 });
 
 // active menu item list start
@@ -283,6 +311,7 @@ for (var l = 0; l < elem.length; l++) {
     elem[l].parentNode.parentNode.parentNode.parentNode.style.display = 'block';
   }
 }
+scroll_to_active_menu();
 
 // like event
 var tc = document.querySelectorAll('.prod-likes .form-check-input');
